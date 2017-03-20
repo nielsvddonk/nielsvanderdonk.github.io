@@ -9,16 +9,19 @@
 @font-face {
     font-family: 'basis_medium';
     src: url(fonts/basis_medium.otf);
+	-webkit-font-smoothing: antialiased;
 }
 
 @font-face {
     font-family: 'basis_regular';
     src: url(fonts/basis_regular.otf);
+	-webkit-font-smoothing: antialiased;
 }
 
 @font-face {
     font-family: 'basis_italic';
     src: url(fonts/basis_italic.ttf);
+	-webkit-font-smoothing: antialiased;
 }
 
 .body {
