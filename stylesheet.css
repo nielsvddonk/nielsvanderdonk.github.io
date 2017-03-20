@@ -1,0 +1,179 @@
+::-webkit-scrollbar { 
+    display: none; 
+}
+
+.custom {
+   cursor: url(image/cursor.png), auto;
+}
+
+@font-face {
+    font-family: 'basis_medium';
+    src: url(fonts/basis_medium.otf);
+}
+
+@font-face {
+    font-family: 'basis_regular';
+    src: url(fonts/basis_regular.otf);
+}
+
+@font-face {
+    font-family: 'basis_italic';
+    src: url(fonts/basis_italic.ttf);
+}
+
+.body {
+	margin: 0;
+	width: 100%;
+	height: 100%;
+	background-color: black;
+	overflow: hidden;
+}
+
+.header2 {
+	width: 180px;
+/*    position: fixed;*/
+    overflow-y: scroll;
+    float: left;
+}
+
+.header2 h1 {
+	color: yellow;
+	font-family: 'basis_medium';
+	font-size: 100%;
+	text-align: left;
+}
+
+.header2 h1 a{
+	color: blue;
+	margin-right: 10px;
+	font-family: 'basis_medium';
+	text-decoration: none;
+}
+
+.header2 h2 {
+	color: grey;
+	margin-right: 10px;
+	font-family: 'basis_regular';
+		font-size: 85%;
+		display: inline;
+}
+
+.header2 h3 {
+	color: yellow;
+	margin-right: 10px;
+	font-family: 'basis_regular';
+	font-size: 85%;
+	display: inline;
+}
+
+.header2 h3 a{
+	color: yellow;
+	margin-right: 10px;
+	font-family: 'basis_regular';
+	text-decoration: none;
+}
+
+.header2 h3 a:hover{
+	color: blue;
+	margin-right: 10px;
+	font-family: 'basis_regular';
+}
+
+.pictures {
+	width: 83%;
+	height: 100%;
+	float: left;
+	text-align: left;
+	padding-left: 10px;
+}
+
+.pictures img {
+	width: 8%;
+	padding-top: 5px;
+	padding-right:5px;
+	padding-bottom:5px;
+	padding-left:5px;
+}
+
+.pictures img:hover {
+/*	-moz-box-shadow: 0 0 15px blue;
+	-webkit-box-shadow: 0 0 15px blue;
+	box-shadow: 0px 0px 15px blue;*/
+}
+
+.about {
+	padding-top: 53px;
+	width: 50%;
+	height: 100%;
+	float: left;
+	text-align: left;
+	padding-left: 10px;
+}
+
+.about img{
+	width: 80%;
+	float: left;
+	padding-top: 5px;
+	padding-right:5px;
+	padding-bottom:5px;
+	padding-left:5px;
+
+}
+
+.textimg img{
+	width: 200px;
+	float: left;
+	padding-top: 5px;
+	padding-right:5px;
+	padding-bottom:5px;
+	padding-left:5px;
+
+}
+
+.about h3 {
+	color: yellow;
+	margin-right: 10px;
+	font-family: 'basis_regular';
+	font-size: 100%;
+	display: inline;
+	float: left;
+		padding-left:5px;
+}
+
+.about a{
+	color: blue;
+}
+
+.about a:hover{
+	color: red;
+}
+
+.about hr{
+	color: yellow;
+	size: 0.5px;
+}
+
+#preloader {
+	overflow: hidden;
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    background-color: black; /* change if the mask should have another color then white */
+    z-index:999; /* makes sure it stays on top */
+}
+
+#status {
+	overflow: hidden;
+    width:200px;
+    height:200px;
+    position:absolute;
+    left:50%; /* centers the loading animation horizontally one the screen */
+    top:50%; /* centers the loading animation vertically one the screen */
+    background-image:url(image/header-1.gif); /* path to your loading animation */
+    background-repeat:no-repeat;
+    background-position:center;
+    margin:-100px 0 0 -100px; /* is width and height divided by two */
+}
+
