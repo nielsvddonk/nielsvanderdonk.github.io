@@ -22,11 +22,6 @@
 	height: 100%;
 	background-color: black;
 	overflow: hidden;
-   	cursor:url(dog.cur), auto;
-}
-
-.body a {
-	   	cursor:url(dog.cur), auto;
 }
 
 .header2 {
@@ -34,7 +29,6 @@
 /*    position: fixed;*/
     overflow-y: scroll;
     float: left;
-   	cursor:url(dog.cur), auto;
 }
 
 .header2 h1 {
@@ -51,7 +45,6 @@
 	font-family: 'basis_medium',Arial, Helvetica, sans-serif;
 	font-weight: normal;
 	text-decoration: none;
-		   	cursor:url(dog2.cur), auto;
 }
 
 .header2 h2 {
@@ -78,7 +71,6 @@
 	font-family: 'basis_regular', Arial, Helvetica, sans-serif;
 	font-weight: normal;
 	text-decoration: none;
-		   	cursor:url(dog2.cur), auto;
 }
 
 .header2 h3 a:hover{
@@ -94,7 +86,6 @@
 	float: left;
 	text-align: left;
 	padding-left: 10px;
-   	cursor:url(dog.cur), auto;
 }
 
 .pictures img {
@@ -118,7 +109,6 @@
 	float: left;
 	text-align: left;
 	padding-left: 10px;
-   	cursor:url(dog.cur), auto;
 }
 
 .about img{
@@ -154,7 +144,6 @@
 
 .about a{
 	color: blue;
-		   	cursor:url(dog2.cur), auto;
 }
 
 .about a:hover{
@@ -175,7 +164,6 @@
     bottom:0;
     background-color: black; /* change if the mask should have another color then white */
     z-index:999; /* makes sure it stays on top */
-    	cursor:url(dog.cur), auto;
 }
 
 #status {
@@ -189,7 +177,6 @@
     background-repeat:no-repeat;
     background-position:center;
     margin:-100px 0 0 -100px; /* is width and height divided by two */
-   	cursor:url(dog.cur), auto;
 }
 
 div.a {
