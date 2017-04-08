@@ -39,12 +39,9 @@
 
 .header2 h1 {
 	color: yellow;
-<<<<<<< HEAD
 	font-family: 'basis_medium',Arial, Helvetica, sans-serif;
-=======
 	font-family: 'basis_medium';
 	font-weight: normal;
->>>>>>> origin/master
 	font-size: 100%;
 	text-align: left;
 }
@@ -52,12 +49,9 @@
 .header2 h1 a{
 	color: blue;
 	margin-right: 10px;
-<<<<<<< HEAD
 	font-family: 'basis_medium',Arial, Helvetica, sans-serif;
-=======
 	font-family: 'basis_medium';
 	font-weight: normal;
->>>>>>> origin/master
 	text-decoration: none;
 		   	cursor:url(dog2.cur), auto;
 }
@@ -65,12 +59,9 @@
 .header2 h2 {
 	color: grey;
 	margin-right: 10px;
-<<<<<<< HEAD
 	font-family: 'basis_regular', Arial, Helvetica, sans-serif;
-=======
 	font-family: 'basis_regular';
 	font-weight: normal;
->>>>>>> origin/master
 		font-size: 85%;
 		display: inline;
 }
@@ -78,12 +69,9 @@
 .header2 h3 {
 	color: yellow;
 	margin-right: 10px;
-<<<<<<< HEAD
 	font-family: 'basis_regular',Arial, Helvetica, sans-serif;
-=======
 	font-family: 'basis_regular';
 	font-weight: normal;
->>>>>>> origin/master
 	font-size: 85%;
 	display: inline;
 }
@@ -91,12 +79,9 @@
 .header2 h3 a{
 	color: yellow;
 	margin-right: 10px;
-<<<<<<< HEAD
 	font-family: 'basis_regular',Arial, Helvetica, sans-serif;
-=======
 	font-family: 'basis_regular';
 	font-weight: normal;
->>>>>>> origin/master
 	text-decoration: none;
 		   	cursor:url(dog2.cur), auto;
 }
@@ -104,12 +89,9 @@
 .header2 h3 a:hover{
 	color: blue;
 	margin-right: 10px;
-<<<<<<< HEAD
 	font-family: 'basis_regular',Arial, Helvetica, sans-serif;
-=======
 	font-family: 'basis_regular';
 	font-weight: normal;
->>>>>>> origin/master
 }
 
 .pictures {
@@ -168,12 +150,9 @@
 .about h3 {
 	color: yellow;
 	margin-right: 10px;
-<<<<<<< HEAD
 	font-family: 'basis_regular',Arial, Helvetica, sans-serif;
-=======
 	font-family: 'basis_regular';
 	font-weight: normal;
->>>>>>> origin/master
 	font-size: 100%;
 	display: inline;
 	float: left;
