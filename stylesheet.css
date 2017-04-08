@@ -1,11 +1,3 @@
-::-webkit-scrollbar { 
-    display: none; 
-}
-
-.custom {
-   cursor: url(image/cursor.png), auto;
-}
-
 @font-face {
     font-family: 'basis_medium';
     src: url(fonts/basis_medium.otf);
@@ -27,6 +19,11 @@
 	height: 100%;
 	background-color: black;
 	overflow: hidden;
+   	cursor:url(dog.cur), auto;
+}
+
+.body a {
+	   	cursor:url(dog.cur), auto;
 }
 
 .header2 {
@@ -34,11 +31,12 @@
 /*    position: fixed;*/
     overflow-y: scroll;
     float: left;
+   	cursor:url(dog.cur), auto;
 }
 
 .header2 h1 {
 	color: yellow;
-	font-family: 'basis_medium';
+	font-family: 'basis_medium',Arial, Helvetica, sans-serif;
 	font-size: 100%;
 	text-align: left;
 }
@@ -46,14 +44,15 @@
 .header2 h1 a{
 	color: blue;
 	margin-right: 10px;
-	font-family: 'basis_medium';
+	font-family: 'basis_medium',Arial, Helvetica, sans-serif;
 	text-decoration: none;
+		   	cursor:url(dog2.cur), auto;
 }
 
 .header2 h2 {
 	color: grey;
 	margin-right: 10px;
-	font-family: 'basis_regular';
+	font-family: 'basis_regular', Arial, Helvetica, sans-serif;
 		font-size: 85%;
 		display: inline;
 }
@@ -61,7 +60,7 @@
 .header2 h3 {
 	color: yellow;
 	margin-right: 10px;
-	font-family: 'basis_regular';
+	font-family: 'basis_regular',Arial, Helvetica, sans-serif;
 	font-size: 85%;
 	display: inline;
 }
@@ -69,14 +68,15 @@
 .header2 h3 a{
 	color: yellow;
 	margin-right: 10px;
-	font-family: 'basis_regular';
+	font-family: 'basis_regular',Arial, Helvetica, sans-serif;
 	text-decoration: none;
+		   	cursor:url(dog2.cur), auto;
 }
 
 .header2 h3 a:hover{
 	color: blue;
 	margin-right: 10px;
-	font-family: 'basis_regular';
+	font-family: 'basis_regular',Arial, Helvetica, sans-serif;
 }
 
 .pictures {
@@ -85,6 +85,7 @@
 	float: left;
 	text-align: left;
 	padding-left: 10px;
+   	cursor:url(dog.cur), auto;
 }
 
 .pictures img {
@@ -108,6 +109,7 @@
 	float: left;
 	text-align: left;
 	padding-left: 10px;
+   	cursor:url(dog.cur), auto;
 }
 
 .about img{
@@ -133,7 +135,7 @@
 .about h3 {
 	color: yellow;
 	margin-right: 10px;
-	font-family: 'basis_regular';
+	font-family: 'basis_regular',Arial, Helvetica, sans-serif;
 	font-size: 100%;
 	display: inline;
 	float: left;
@@ -142,6 +144,7 @@
 
 .about a{
 	color: blue;
+		   	cursor:url(dog2.cur), auto;
 }
 
 .about a:hover{
@@ -162,6 +165,7 @@
     bottom:0;
     background-color: black; /* change if the mask should have another color then white */
     z-index:999; /* makes sure it stays on top */
+    	cursor:url(dog.cur), auto;
 }
 
 #status {
@@ -175,5 +179,15 @@
     background-repeat:no-repeat;
     background-position:center;
     margin:-100px 0 0 -100px; /* is width and height divided by two */
+   	cursor:url(dog.cur), auto;
 }
+
+div.a {
+position:fixed;
+}
+
+div.a img {
+	width:20%;
+}
+
 

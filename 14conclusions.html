@@ -37,17 +37,20 @@
 </h1></center>
 
 <h3><a href="about.html">About</h3></a><br>
-<h3><a href="behindthescenes.html">Behind The Scenes</h3></a><br><br><br>
+<h3><a href="http://nielsvanderdonk.tumblr.com/">Behind The Scenes</h3></a><br><br><br>
 
 <h2>PROJECTS</h2><br>
 <h3><a href="14conclusions.html">14 Conclusions About<br></span>
 Mobility, Migration & Borders<br>
 <a href="yourelivingasimulation.html">You're Living A Simulation</span><br></a>
+<a href="postphysicalyouthculture.html">Post Physical Youth Culture</span><br></a>
+<a href="thehorroroftheself.html">The Horror Of The Self</span><br></a>
 <a href="iwasnotallowedtoentertheplane.html">I Was Not Allowed To Enter<br></span>
 The Plane<br></span></a>
 <a href="doandroidsdreamofelectricsheep.html">Do Androids Dream Of<br></span>
 Electric Sheep?<br></span></a>
 <a href="vrsmash.html">VR Smash</span><br></a>
+<a href="masterclass.html">Masterclass</span><br></a>
 <a href="contemporarypaleography.html">Contemporary Paleography</span><br></a>
 <a href="colors.html">Colors</span><br></a>
 <a href="facetype.html">FaceType</span><br></a>
@@ -58,19 +61,19 @@ Electric Sheep?<br></span></a>
 <a href="lovemountain.html">Love Mountain</span><br></a>
 </span></a><br>
 <h2>VIDEOS</h2><br>
-<h3><a href="jumpkickstompspin">Jump, Kick, Stomp, Spin</span><br></a>
-<a href="taliyoon">Taliyoon</span><br></a>
-<a href="google">Google</span><br></a>
-<a href="chu">DJ DARKLORD: CHU</span><br></a>
-<a href="hinda">DJ DARKLORD: HINDA</span><br></a>
-Electric Sheep?<br></span></a><br>
+<h3>
+<a href="taliyoon.html">Taliyoon</span><br></a>
+<a href="google.html">Google</span><br></a>
+<a href="chu.html">DJ DARKLORD: CHU</span><br></a>
+<a href="hinda.html">DJ DARKLORD: HINDA</span><br></a>
+<br>
 <h2>INTERACTIVE</h2><br>
-<h3><a href="highbornvoyage">Nilssi: High Born Voyage</span><br></a>
-<a href="vrsmash">VR Smash</span><br></a>
-<a href="facetype">FaceType</span><br></a>
-<a href="hinda">DJ DARKLORD: HINDA</span><br></a>
-<a href="formedbytheinternet">Formed By The Internet</span><br></a>
-<a href="digitalexposition">Digital Exposition<br></a>
+<h3><a href="highbornvoyage.html">Nilssi: High Born Voyage</span><br></a>
+<a href="vrsmash.html">VR Smash</span><br></a>
+<a href="facetype.html">FaceType</span><br></a>
+<a href="hinda.html">DJ DARKLORD: HINDA</span><br></a>
+<a href="formedbytheinternet.html">Formed By The Internet</span><br></a>
+<a href="digitalexposition.html">Digital Exposition<br></a>
 <br>
 <h2>EVENTS</h2><br>
 <h3><a href="theroyalchessclub.html">The Royal Chess Club</span><br></a>
@@ -122,6 +125,70 @@ A free download of the book can be downloaded below:<br><br>
     <img src="image/14conclusions/14conclusions4.png" alt="work">
     <img src="image/14conclusions/14conclusions5.png" alt="work">
     </div>
+    <div class='a'>
+<script type="text/javascript">
+var path = 'image/',
+    imgs = ['gif1.gif','gif2.gif','gif3.gif','gif4.gif','gif5.gif','gif6.gif','gif7.gif','gif8.gif','gif9.gif'],
+    i = Math.floor(Math.random()*imgs.length);
+$('.a').append("<img src='"+path+imgs[i]+"'>").hide().fadeIn(2000);
+</script>
+
+</div>
+<script>
+$(document).ready(function(){
+    animateDiv();
+    
+});
+
+function makeNewPosition(){
+    
+    // Get viewport dimensions (remove the dimension of the div)
+    var h = $(window).height() - 50;
+    var w = $(window).width() - 50;
+    
+    var nh = Math.floor(Math.random() * h);
+    var nw = Math.floor(Math.random() * w);
+    
+    return [nh,nw];    
+    
+}
+
+function animateDiv(){
+    var newq = makeNewPosition();
+    var oldq = $('.a').offset();
+    var speed = calcSpeed([oldq.top, oldq.left], newq);
+    
+    $('.a').animate({ top: newq[0], left: newq[1] }, speed, function(){
+      animateDiv();        
+    });
+    
+};
+
+function calcSpeed(prev, next) {
+    
+    var x = Math.abs(prev[1] - next[1]);
+    var y = Math.abs(prev[0] - next[0]);
+    
+    var greatest = x > y ? x : y;
+    
+    var speedModifier = 0.1;
+
+    var speed = Math.ceil(greatest/speedModifier);
+
+    return speed;
+
+}</script>
+
+
+<script type="text/javascript">
+    //<![CDATA[
+        $(window).on('load', function() { // makes sure the whole site is loaded 
+            $('#status').fadeOut(); // will first fade out the loading animation 
+            $('#preloader').delay(350).fadeOut('slow'); // will fade out the white DIV that covers the website. 
+            $('body').delay(350).css({'overflow':'visible'});
+        })
+    //]]>
+</script>
 
 <script type="text/javascript">
     //<![CDATA[
