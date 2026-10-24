@@ -129,6 +129,39 @@ export async function uploadImage(file) {
   return blobToDataUrl(await resizeImage(file, 1000, 0.75));
 }
 
+// ---------- Import from a link ----------
+// Browsers can't read other websites, so the Supabase function "import-recipe"
+// fetches the page (or photo) for us; js/lib/importer.js reads the recipe from it.
+
+async function callImporter(body) {
+  if (mode !== 'supabase') throw new Error('Importing from a link only works in the online version (Supabase).');
+  const { data, error } = await (await db()).functions.invoke('import-recipe', { body });
+  if (error) {
+    if (error.name === 'FunctionsFetchError' || error.name === 'FunctionsRelayError') {
+      throw new Error('Couldn’t reach the import function. Is it deployed, with “Verify JWT” turned off? See README.md, “Import from a link”.');
+    }
+    const res = error.context;
+    let details = {};
+    try { details = await res.json(); } catch { /* not JSON */ }
+    if (res?.status === 404) throw new Error('The import function isn’t set up yet — see README.md, “Import from a link”.');
+    if (details.error) throw new Error(details.error);
+    if (res?.status === 401) throw new Error('Supabase blocked the import function: turn off “Verify JWT” for it (README.md).');
+    throw new Error(error.message);
+  }
+  if (data?.error) throw new Error(data.error);
+  return data;
+}
+
+// → { url, html }
+export const fetchPage = (url) => callImporter({ url });
+
+// → a File, ready for uploadImage()
+export async function fetchImage(url) {
+  const { type, base64 } = await callImporter({ url, kind: 'image' });
+  const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+  return new File([bytes], 'photo', { type });
+}
+
 // ---------- Backup ----------
 
 export async function exportRecipes() {

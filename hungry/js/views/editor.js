@@ -1,7 +1,8 @@
 // Add / edit a recipe. Used for both #/new and #/edit/<id>.
 
-import { listRecipes, saveRecipe, deleteRecipe, uploadImage, allTags, allCooks } from '../store.js';
+import { listRecipes, saveRecipe, deleteRecipe, uploadImage, allTags, allCooks, fetchPage, fetchImage } from '../store.js';
 import { esc, unique } from '../lib/util.js';
+import { recipeFromHtml, recipeFromText, asUrl } from '../lib/importer.js';
 
 const DEFAULT_TAGS = ['pasta', 'rice', 'noodles', 'soup', 'curry', 'salad', 'meat', 'chicken', 'fish',
   'vegetarian', 'vegan', 'breakfast', 'lunch', 'dessert', 'baking', 'snack', 'quick',
@@ -36,6 +37,16 @@ export default async function editor(el, { id }) {
   el.innerHTML = `
     <form class="editor" id="form" novalidate>
       <h1>${existing ? 'Edit recipe' : 'New recipe'}</h1>
+
+      ${existing ? '' : `
+        <div class="field import-box">
+          <span class="label">Import <span class="muted">— paste a link, or the recipe text itself</span></span>
+          <div class="inline-add">
+            <textarea id="import-input" rows="1" placeholder="https://www.bbcgoodfood.com/recipes/…" autocomplete="off"></textarea>
+            <button type="button" class="btn" id="import-btn">Import</button>
+          </div>
+          <p class="hint" id="import-status" hidden></p>
+        </div>`}
 
       <label class="field">
         <span class="label">Title</span>
@@ -162,16 +173,91 @@ export default async function editor(el, { id }) {
       renderImage();
     }
   });
-  $('#image-input').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  function setPhoto(file) {
     imageFile = file;
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     previewUrl = URL.createObjectURL(file);
     dirty = true;
     renderImage();
+  }
+  $('#image-input').addEventListener('change', (e) => {
+    if (e.target.files[0]) setPhoto(e.target.files[0]);
     e.target.value = '';
   });
+
+  // ----- Import from a link or pasted text -----
+  const importInput = $('#import-input');
+  const importStatus = $('#import-status');
+  const showImportStatus = (msg, isError = false) => {
+    importStatus.textContent = msg;
+    importStatus.hidden = !msg;
+    importStatus.classList.toggle('error', isError);
+  };
+
+  function fill(d) {
+    const f = form.elements;
+    if (d.title) f.title.value = d.title;
+    if (d.servings) f.servings.value = d.servings;
+    if (d.time) f.time.value = d.time;
+    if (d.source) f.source.value = d.source;
+    if (d.notes) f.notes.value = d.notes;
+    const known = new Set(tagOptions());
+    d.tagHints.filter((t) => known.has(t)).forEach((t) => tags.add(t)); // only tags you already use
+    if (d.ingredients.length) groups.splice(0, groups.length, ...d.ingredients.map((g) => ({ name: g.name, text: g.items.join('\n') })));
+    if (d.steps.length) steps.splice(0, steps.length, ...d.steps);
+    renderTags();
+    renderGroups();
+    renderSteps();
+    form.querySelectorAll('textarea').forEach(autogrow);
+    dirty = true;
+  }
+
+  async function runImport() {
+    const input = importInput.value.trim();
+    if (!input) return;
+    const url = asUrl(input);
+    $('#import-btn').disabled = true;
+    showImportStatus(url ? 'Fetching the recipe…' : 'Reading the text…');
+    try {
+      let draft;
+      if (url) {
+        const page = await fetchPage(url);
+        draft = recipeFromHtml(page.html, page.url || url);
+      } else {
+        draft = recipeFromText(input);
+      }
+      if (!draft || (!draft.ingredients.length && !draft.steps.length)) {
+        throw new Error(url
+          ? 'Couldn’t find a recipe on that page. Copy the recipe text and paste it here instead.'
+          : 'Couldn’t find ingredients or steps. Put them under headings like “Ingredients” and “Method”.');
+      }
+      fill(draft);
+      const count = draft.ingredients.reduce((n, g) => n + g.items.length, 0);
+      const from = url ? ` from ${new URL(draft.source).hostname.replace(/^www\./, '')}` : '';
+      showImportStatus(`Imported${from}: ${count} ingredients, ${draft.steps.length} steps. Check everything, then save.`);
+      importInput.value = '';
+      autogrow(importInput);
+      loadImportedPhoto(draft.images);
+    } catch (err) {
+      showImportStatus(err.message || String(err), true);
+    } finally {
+      $('#import-btn').disabled = false;
+    }
+  }
+
+  // Photos are fetched after the text, original size first, then smaller versions.
+  async function loadImportedPhoto(candidates) {
+    for (const src of candidates.slice(0, 4)) {
+      if (imageFile || image) return; // you picked one yourself meanwhile
+      try { setPhoto(await fetchImage(src)); return; } catch { /* try the next one */ }
+    }
+  }
+
+  if (importInput) {
+    $('#import-btn').addEventListener('click', runImport);
+    // Pasting a link is enough: import right away.
+    importInput.addEventListener('paste', () => setTimeout(() => { if (asUrl(importInput.value)) runImport(); }));
+  }
 
   // ----- Ingredient groups -----
   function renderGroups() {
@@ -266,6 +352,7 @@ export default async function editor(el, { id }) {
   // ----- Typing anywhere -----
   form.addEventListener('input', (e) => {
     const t = e.target;
+    if (t.id === 'import-input') { autogrow(t); return; }
     if (t.id === 'paste-text' || t.id === 'new-tag') return;
     dirty = true;
     if (t.tagName === 'TEXTAREA') autogrow(t);
@@ -276,6 +363,10 @@ export default async function editor(el, { id }) {
   // Don't submit by accident when pressing Enter in a text field (e.g. "Go" on a phone keyboard).
   form.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && e.target.tagName === 'INPUT') e.preventDefault();
+    if (e.key === 'Enter' && !e.shiftKey && e.target.id === 'import-input' && asUrl(e.target.value)) {
+      e.preventDefault();
+      runImport();
+    }
   });
 
   // ----- Save / delete -----

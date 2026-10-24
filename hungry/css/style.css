@@ -328,8 +328,11 @@ input[type="checkbox"] { width: auto; }
   .field-row { grid-template-columns: 1fr 1fr; }
   .field-row .field:first-child { grid-column: 1 / -1; }
 }
-.inline-add { display: flex; gap: 8px; }
-.inline-add input { flex: 1; }
+.inline-add { display: flex; gap: 8px; align-items: flex-start; }
+.inline-add input, .inline-add textarea { flex: 1; }
+.import-box { padding: 16px; background: var(--soft); border-radius: var(--radius); }
+.import-box textarea { min-height: 44px; resize: none; }
+.import-box .hint { margin: 10px 0 0; }
 
 .image-preview { max-height: 260px; border-radius: var(--radius); margin-bottom: 4px; }
 

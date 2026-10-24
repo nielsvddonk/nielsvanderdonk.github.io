@@ -2,7 +2,7 @@ import { getRecipe, loadTicks, setTick, clearTicks, watchTicks, ticksAreShared }
 import { esc, paragraphs, nav, hash, debounce } from '../lib/util.js';
 import { displayLine } from '../lib/ingredients.js';
 import * as wake from '../lib/wakelock.js';
-import { formatTime } from './parts.js';
+import { formatTime, formatDate } from './parts.js';
 
 // Ticks are keyed by the text they belong to, so editing a recipe doesn't shuffle them.
 const ingKey = (group, line) => 'i' + hash(group + '\n' + line);
@@ -29,7 +29,9 @@ export default async function recipeView(el, { id, admin }) {
 
   const base = r.servings || 0;
   let servings = base;
-  const meta = [r.cook && `by ${esc(r.cook)}`, esc(formatTime(r.time)), sourceHtml(r.source)].filter(Boolean);
+  const added = formatDate(r.createdAt);
+  const meta = [r.cook && `by ${esc(r.cook)}`, esc(formatTime(r.time)), sourceHtml(r.source), added && `added ${added}`]
+    .filter(Boolean);
 
   el.innerHTML = `
     <article class="recipe" id="recipe">

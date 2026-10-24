@@ -10,6 +10,12 @@ export const formatTime = (min) => {
   return m ? `${h} h ${m} min` : `${h} h`;
 };
 
+// "2026-10-24T12:00:00Z" → "24 Oct 2026"
+export const formatDate = (iso) => {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+};
+
 export function recipeRow(r) {
   const meta = [(r.tags || []).join(' · '), r.cook, formatTime(r.time)].filter(Boolean).join('  —  ');
   return `
