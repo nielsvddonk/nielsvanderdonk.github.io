@@ -1,13 +1,12 @@
 /* Pesten Score — two full-page halves, Vikki red and Niels black.
-   Each half's width is its share of games won. */
+   Each half's width is its share of games won. Flat and minimal. */
 
 :root {
   --bg: #ffffff;
   --muted: #6f6f6f;
   --red: #c8102e;
   --black: #111111;
-  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --serif: Georgia, "Times New Roman", serif; /* numbers like on playing cards */
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; /* as in Hungry */
   color-scheme: light dark;
 }
 @media (prefers-color-scheme: dark) {
@@ -36,71 +35,33 @@ body {
   overflow: hidden;
   container-type: size;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding-top: env(safe-area-inset-top);
   color: #fff;
-  /* Springy push: the leader overshoots a little, then settles. */
-  transition: flex-grow .8s cubic-bezier(.34, 1.56, .64, 1);
+  transition: flex-grow .7s cubic-bezier(.34, 1.4, .64, 1); /* a slightly springy push */
 }
-.card.red { background: var(--red); --glow: rgba(255, 255, 255, .14); --shade: rgba(0, 0, 0, .22); }
-.card.black { background: var(--black); --glow: rgba(255, 255, 255, .07); --shade: rgba(0, 0, 0, 0); }
+.card.red { background: var(--red); }
+.card.black { background: var(--black); }
 
-/* A slow, faint swirl in the background of each half. */
-.card::before {
-  content: "";
-  position: absolute;
-  inset: -40%;
-  background:
-    radial-gradient(38% 32% at 32% 36%, var(--glow), transparent 70%),
-    radial-gradient(42% 36% at 68% 64%, var(--shade), transparent 70%);
-  animation: swirl 22s linear infinite;
-  pointer-events: none;
-}
-.card + .card::before { animation-direction: reverse; }
-@keyframes swirl { to { transform: rotate(1turn); } }
-
-/* The number, suit and name float and wobble, like a card in your hand. */
-.face {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  animation: float 6s ease-in-out infinite;
-  transition: scale .45s cubic-bezier(.34, 1.56, .64, 1);
-}
-.card + .card .face { animation-delay: -3s; }
-@keyframes float {
-  0%, 100% { transform: perspective(800px) translateY(0) rotate(-1.2deg) rotateY(-6deg); }
-  50% { transform: perspective(800px) translateY(-8px) rotate(1.2deg) rotateY(6deg); }
-}
-@media (hover: hover) {
-  .card:hover .face { scale: 1.05; }
-}
-
-.suit { font-size: clamp(18px, 9cqw, 40px); line-height: 1; opacity: .85; }
+.face { display: flex; flex-direction: column; align-items: center; }
+.suit { font-size: clamp(16px, 7cqw, 28px); line-height: 1; opacity: .7; }
 .score {
-  margin: .08em 0 .04em;
-  font-family: var(--serif);
-  font-size: min(52cqw, 34cqh);
+  margin: .12em 0 .06em;
+  font-size: min(48cqw, 32cqh);
   font-weight: 700;
-  line-height: .9;
+  letter-spacing: -0.04em;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 .05em 0 rgba(0, 0, 0, .28); /* a chunky drop shadow */
 }
-.name { margin: 0; font-size: clamp(15px, 7cqw, 24px); font-weight: 500; opacity: .85; }
+.name { margin: 0; font-size: clamp(15px, 7cqw, 22px); font-weight: 600; opacity: .8; }
 
 .burst {
   position: absolute;
   left: 50%;
-  top: 32%;
-  z-index: 1;
-  color: #fff;
-  font-size: clamp(22px, 12cqw, 44px);
-  font-weight: 800;
-  line-height: 1;
-  text-shadow: 0 3px 0 rgba(0, 0, 0, .35);
+  top: 34%;
+  font-size: clamp(18px, 9cqw, 28px);
+  font-weight: 700;
   pointer-events: none;
 }
 
@@ -122,7 +83,7 @@ body {
   height: 34px;
   display: grid;
   place-items: center;
-  border: 1.5px solid rgba(255, 255, 255, .65);
+  border: 1.5px solid rgba(255, 255, 255, .6);
   border-radius: 50%;
   background: transparent;
   color: #fff;
@@ -131,10 +92,10 @@ body {
   line-height: 1;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: transform .35s cubic-bezier(.34, 1.56, .64, 1), background .2s;
+  transition: transform .3s cubic-bezier(.34, 1.56, .64, 1);
 }
 .controls button::after { content: ""; position: absolute; inset: -6px; } /* easier to tap */
-.controls button:active { transform: scale(.8); background: rgba(255, 255, 255, .18); transition-duration: .06s; }
+.controls button:active { transform: scale(.85); transition-duration: .06s; }
 .controls button:disabled { opacity: .3; cursor: default; }
 .controls button:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 
@@ -145,7 +106,6 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .card { transition: none; }
-  .card::before, .face { animation: none; }
 }
 
 /* ---------- Bottom line ---------- */

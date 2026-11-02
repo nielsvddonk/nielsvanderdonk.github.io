@@ -1,6 +1,6 @@
 // The board: one full-height half per player, side by side. Each half's width
 // is its share of all games won, so whoever leads pushes the other to the side.
-// Motion in the spirit of Balatro: floating cards, juicy number pops, +1 bursts.
+// Motion stays small: a springy push, a quick bump and a "+1" when a number changes.
 
 const MIN_SHARE = 0.22; // the trailing half stays wide enough to read and tap
 const calm = matchMedia('(prefers-reduced-motion: reduce)');
@@ -8,40 +8,25 @@ const calm = matchMedia('(prefers-reduced-motion: reduce)');
 const ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 const esc = (s = '') => String(s).replace(/[&<>"']/g, (c) => ESC[c]);
 
-// The number jumps up big, twists, and wobbles back into place.
-function pop(el) {
-  el.animate([
-    { transform: 'scale(1) rotate(0deg)' },
-    { transform: 'scale(1.5) rotate(-8deg)', offset: 0.22 },
-    { transform: 'scale(0.88) rotate(6deg)', offset: 0.48 },
-    { transform: 'scale(1.08) rotate(-3deg)', offset: 0.7 },
-    { transform: 'scale(0.98) rotate(1deg)', offset: 0.86 },
-    { transform: 'scale(1) rotate(0deg)' },
-  ], { duration: 700, easing: 'cubic-bezier(.2, .8, .2, 1)' });
+// A quick bump: up a little for a win, down a little for a take-back.
+function bump(el, up) {
+  el.animate(up
+    ? [{ transform: 'scale(1)' }, { transform: 'scale(1.15)', offset: 0.35 }, { transform: 'scale(.98)', offset: 0.7 }, { transform: 'scale(1)' }]
+    : [{ transform: 'scale(1)' }, { transform: 'scale(.88)', offset: 0.4 }, { transform: 'scale(1)' }],
+  { duration: up ? 420 : 320, easing: 'ease-out' });
 }
 
-// The number sinks a little and bounces back.
-function dip(el) {
-  el.animate([
-    { transform: 'scale(1) rotate(0deg)' },
-    { transform: 'scale(0.75) rotate(5deg)', offset: 0.3 },
-    { transform: 'scale(1.06) rotate(-2deg)', offset: 0.65 },
-    { transform: 'scale(1) rotate(0deg)' },
-  ], { duration: 500, easing: 'ease-out' });
-}
-
-// "+1" pops out above the number and floats away (or "−1" drops down).
+// "+1" rises and fades out (or "−1" sinks).
 function burst(card, text, up) {
   const el = document.createElement('span');
   el.className = 'burst';
   el.textContent = text;
   card.append(el);
   el.animate([
-    { transform: 'translate(-50%, 0) scale(.3) rotate(-14deg)', opacity: 0 },
-    { transform: 'translate(-50%, -12px) scale(1.25) rotate(7deg)', opacity: 1, offset: 0.25 },
-    { transform: 'translate(-50%, -26px) scale(1) rotate(-3deg)', opacity: 1, offset: 0.55 },
-    { transform: `translate(-50%, ${up ? -80 : 60}px) scale(.85) rotate(0deg)`, opacity: 0 },
-  ], { duration: 950, easing: 'cubic-bezier(.2, .8, .2, 1)' }).finished.then(() => el.remove());
+    { transform: 'translate(-50%, 0)', opacity: 0 },
+    { transform: `translate(-50%, ${up ? -8 : 8}px)`, opacity: 1, offset: 0.2 },
+    { transform: `translate(-50%, ${up ? -40 : 32}px)`, opacity: 0 },
+  ], { duration: 800, easing: 'ease-out' }).finished.then(() => el.remove());
 }
 
 // Builds the halves once; returns update(state) to show new scores.
@@ -82,8 +67,9 @@ export function createBoard(el, players, { onWin, onUndo }) {
       score.textContent = n;
       const before = shown[p.id];
       if (before !== undefined && n !== before && !calm.matches) {
-        if (n > before) { pop(score); burst(card, '+1', true); }
-        else { dip(score); burst(card, '−1', false); }
+        const up = n > before;
+        bump(score, up);
+        burst(card, up ? '+1' : '−1', up);
       }
       shown[p.id] = n;
     }
