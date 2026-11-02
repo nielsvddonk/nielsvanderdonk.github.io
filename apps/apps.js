@@ -16,4 +16,11 @@ export const apps = [
     description: 'Our recipes: random pick, week planner, cook mode.',
     public: true,
   },
+  {
+    name: 'Pesten Score',
+    path: 'pesten/',
+    icon: 'pesten/icon.svg',
+    description: 'Who’s winning at pesten: Vikki vs Niels.',
+    public: true,
+  },
 ];
