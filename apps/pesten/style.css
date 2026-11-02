@@ -15,6 +15,7 @@
 
 * { box-sizing: border-box; }
 html, body { height: 100%; }
+html { touch-action: manipulation; } /* quick taps on + are taps, not iPhone's double-tap zoom */
 body {
   margin: 0;
   display: flex;
@@ -26,7 +27,14 @@ body {
 
 /* ---------- The two halves ---------- */
 
-.board { flex: 1; min-height: 0; display: flex; }
+.board {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  -webkit-user-select: none; /* fast tapping doesn't select the numbers */
+  user-select: none;
+  -webkit-touch-callout: none;
+}
 
 .card {
   flex: 1 1 0;
@@ -92,6 +100,7 @@ body {
   line-height: 1;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
   transition: transform .3s cubic-bezier(.34, 1.56, .64, 1);
 }
 .controls button::after { content: ""; position: absolute; inset: -6px; } /* easier to tap */
