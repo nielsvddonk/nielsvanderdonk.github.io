@@ -1,18 +1,17 @@
-/* Pesten Score — two playing cards; each card's width is its share of games won. */
+/* Pesten Score — two full-page halves, Vikki red and Niels black.
+   Each half's width is its share of games won. */
 
 :root {
   --bg: #ffffff;
-  --fg: #111111;
   --muted: #6f6f6f;
-  --card: #ffffff;
-  --ink: #111111;
   --red: #c8102e;
+  --black: #111111;
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --serif: Georgia, "Times New Roman", serif; /* card ranks look like real cards in a serif */
+  --serif: Georgia, "Times New Roman", serif; /* numbers like on playing cards */
   color-scheme: light dark;
 }
 @media (prefers-color-scheme: dark) {
-  :root { --bg: #0e0e0e; --fg: #f1f1f1; --muted: #9a9a9a; }
+  :root { --bg: #0e0e0e; --muted: #9a9a9a; --black: #000000; }
 }
 
 * { box-sizing: border-box; }
@@ -22,41 +21,15 @@ body {
   display: flex;
   flex-direction: column;
   background: var(--bg);
-  color: var(--fg);
   font: 16px/1.4 var(--font);
   -webkit-font-smoothing: antialiased;
 }
 
-/* ---------- Top bar ---------- */
+/* ---------- The two halves ---------- */
 
-.bar {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: max(14px, env(safe-area-inset-top)) 18px 10px;
-}
-.title { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em; color: inherit; text-decoration: none; }
-.games { color: var(--muted); font-size: .9rem; }
-.bar .link { margin-left: auto; color: var(--muted); font-size: .9rem; }
-
-/* ---------- The board ---------- */
-
-.board {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  gap: 10px;
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 0 12px max(12px, env(safe-area-inset-bottom));
-}
+.board { flex: 1; min-height: 0; display: flex; }
 
 .card {
-  --suit-ink: var(--ink);
   flex: 1 1 0;
   min-width: 0;
   position: relative;
@@ -66,99 +39,124 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1.5cqh;
-  background: var(--card);
-  color: var(--ink);
-  border: 2px solid var(--ink);
-  border-radius: 18px;
-  transition: flex-grow .6s cubic-bezier(.2, .8, .2, 1);
+  padding-top: env(safe-area-inset-top);
+  color: #fff;
+  /* Springy push: the leader overshoots a little, then settles. */
+  transition: flex-grow .8s cubic-bezier(.34, 1.56, .64, 1);
 }
-.card.red { --suit-ink: var(--red); }
+.card.red { background: var(--red); --glow: rgba(255, 255, 255, .14); --shade: rgba(0, 0, 0, .22); }
+.card.black { background: var(--black); --glow: rgba(255, 255, 255, .07); --shade: rgba(0, 0, 0, 0); }
 
-/* A big, faint suit in the middle of the card. */
+/* A slow, faint swirl in the background of each half. */
 .card::before {
-  content: attr(data-suit);
+  content: "";
   position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font-size: min(95cqw, 75cqh);
-  line-height: 1;
-  color: var(--suit-ink);
-  opacity: .06;
+  inset: -40%;
+  background:
+    radial-gradient(38% 32% at 32% 36%, var(--glow), transparent 70%),
+    radial-gradient(42% 36% at 68% 64%, var(--shade), transparent 70%);
+  animation: swirl 22s linear infinite;
   pointer-events: none;
 }
+.card + .card::before { animation-direction: reverse; }
+@keyframes swirl { to { transform: rotate(1turn); } }
 
-/* Rank + suit in the corners, like a real card. */
-.corner {
-  position: absolute;
+/* The number, suit and name float and wobble, like a card in your hand. */
+.face {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  line-height: 1.05;
-  color: var(--suit-ink);
-  font-family: var(--serif);
-  font-size: clamp(15px, 8cqw, 34px);
+  animation: float 6s ease-in-out infinite;
+  transition: scale .45s cubic-bezier(.34, 1.56, .64, 1);
 }
-.corner .rank { font-weight: 700; }
-.corner.top { top: 12px; left: 12px; }
-.corner.bottom { right: 12px; bottom: 12px; transform: rotate(180deg); }
+.card + .card .face { animation-delay: -3s; }
+@keyframes float {
+  0%, 100% { transform: perspective(800px) translateY(0) rotate(-1.2deg) rotateY(-6deg); }
+  50% { transform: perspective(800px) translateY(-8px) rotate(1.2deg) rotateY(6deg); }
+}
+@media (hover: hover) {
+  .card:hover .face { scale: 1.05; }
+}
 
-.name { margin: 0; font-size: clamp(15px, 9cqw, 30px); font-weight: 600; }
+.suit { font-size: clamp(18px, 9cqw, 40px); line-height: 1; opacity: .85; }
 .score {
-  margin: 0;
-  color: var(--suit-ink);
+  margin: .08em 0 .04em;
   font-family: var(--serif);
-  font-size: min(52cqw, 30cqh);
+  font-size: min(52cqw, 34cqh);
   font-weight: 700;
-  line-height: .95;
+  line-height: .9;
   font-variant-numeric: tabular-nums;
+  text-shadow: 0 .05em 0 rgba(0, 0, 0, .28); /* a chunky drop shadow */
 }
-.share { margin: 0; color: var(--muted); font-size: clamp(14px, 7cqw, 24px); font-variant-numeric: tabular-nums; }
-.leading .share { color: var(--ink); font-weight: 700; }
+.name { margin: 0; font-size: clamp(15px, 7cqw, 24px); font-weight: 500; opacity: .85; }
 
-/* + and − only for the two of you (logged in). */
-.controls { display: none; align-items: center; gap: 10px; margin-top: 2cqh; }
+.burst {
+  position: absolute;
+  left: 50%;
+  top: 32%;
+  z-index: 1;
+  color: #fff;
+  font-size: clamp(22px, 12cqw, 44px);
+  font-weight: 800;
+  line-height: 1;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, .35);
+  pointer-events: none;
+}
+
+/* Small − and + at the bottom of each half — only when logged in. */
+.controls {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 18px;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
 .can-edit .controls { display: flex; }
 .controls button {
+  position: relative;
+  width: 34px;
+  height: 34px;
   display: grid;
   place-items: center;
-  border: 2px solid var(--ink);
+  border: 1.5px solid rgba(255, 255, 255, .65);
   border-radius: 50%;
-  background: var(--card);
-  color: var(--ink);
+  background: transparent;
+  color: #fff;
   font: inherit;
+  font-size: 20px;
   line-height: 1;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  transition: transform .35s cubic-bezier(.34, 1.56, .64, 1), background .2s;
 }
-.controls .win {
-  width: clamp(52px, 30cqw, 84px);
-  height: clamp(52px, 30cqw, 84px);
-  border-color: var(--suit-ink);
-  background: var(--suit-ink);
-  color: #fff;
-  font-size: clamp(28px, 16cqw, 46px);
-}
-.controls .undo { width: 40px; height: 40px; font-size: 22px; }
-.controls .undo:disabled { opacity: .25; cursor: default; }
-.controls button:active { transform: scale(.94); }
-.controls button:focus-visible { outline: 3px solid var(--suit-ink); outline-offset: 3px; }
+.controls button::after { content: ""; position: absolute; inset: -6px; } /* easier to tap */
+.controls button:active { transform: scale(.8); background: rgba(255, 255, 255, .18); transition-duration: .06s; }
+.controls button:disabled { opacity: .3; cursor: default; }
+.controls button:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 
-/* A narrow (losing!) card stacks its buttons. */
-@container (max-width: 150px) {
-  .controls { flex-direction: column; }
+/* A very narrow (losing!) half stacks + above −. */
+@container (max-width: 96px) {
+  .controls { flex-direction: column-reverse; gap: 10px; }
 }
-
-.bump { animation: bump .35s ease-out; }
-@keyframes bump { 40% { transform: scale(1.15); } }
 
 @media (prefers-reduced-motion: reduce) {
   .card { transition: none; }
-  .bump { animation: none; }
+  .card::before, .face { animation: none; }
 }
 
-/* ---------- Messages ---------- */
+/* ---------- Bottom line ---------- */
 
-.notice { margin: 0; padding: 0 18px 12px; color: var(--muted); font-size: .9rem; text-align: center; }
-.notice.error { color: var(--red); }
+.foot {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 12px 16px max(12px, env(safe-area-inset-bottom));
+  color: var(--muted);
+  font-size: .85rem;
+}
+.foot .link { margin-left: auto; color: inherit; white-space: nowrap; }
+.foot .error { color: var(--red); }

@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Pesten Score</title>
   <meta name="robots" content="noindex">
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0e0e0e" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#111111">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Pesten">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
@@ -15,14 +15,12 @@
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-  <header class="bar">
-    <a class="title" href="./">Pesten Score</a>
-    <span class="games" id="games"></span>
-    <a class="link" id="auth-link" href="../">Apps</a>
-  </header>
-
   <main class="board" id="board" aria-live="polite"></main>
-  <p class="notice" id="notice" hidden></p>
+
+  <footer class="foot">
+    <span id="last"></span>
+    <a class="link" id="auth-link" href="../">Apps</a>
+  </footer>
 
   <script type="module" src="./app.js"></script>
 </body>
