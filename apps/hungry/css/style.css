@@ -35,6 +35,9 @@
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
+/* Quick taps (servings −/+, ticking steps) are taps, not iPhone's double-tap zoom.
+   Pinch-to-zoom still works. */
+html, button, a, label, .step { touch-action: manipulation; }
 
 body {
   margin: 0;
