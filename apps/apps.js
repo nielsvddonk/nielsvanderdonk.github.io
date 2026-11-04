@@ -23,4 +23,11 @@ export const apps = [
     description: 'Who’s winning at pesten: Vikki vs Niels.',
     public: true,
   },
+  {
+    name: 'Movie Hat',
+    path: 'movie-hat/',
+    icon: 'movie-hat/icon.svg',
+    description: 'Our watchlist in a hat: grab a random movie for tonight.',
+    public: true,
+  },
 ];

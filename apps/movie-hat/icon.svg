@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#111"/>
+  <!-- a top hat with a play button on it -->
+  <path d="M164 88Q164 76 176 76H336Q348 76 348 88L340 364H172Z" fill="#fff"/>
+  <rect x="86" y="352" width="340" height="52" rx="26" fill="#fff"/>
+  <rect x="168" y="268" width="176" height="34" fill="#111"/>
+  <path d="M234 130V218L306 174Z" fill="#111" stroke="#111" stroke-width="14" stroke-linejoin="round"/>
+</svg>
