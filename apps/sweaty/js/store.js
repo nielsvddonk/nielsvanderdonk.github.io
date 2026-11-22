@@ -286,6 +286,22 @@ export function discardUnsaved() {
 setInterval(() => { if (outbox.length) flush(); }, 30000);
 window.addEventListener('online', () => flush());
 
+// ---------- Pictures ----------
+
+// A photo from your phone → the address of the saved (smaller) picture.
+// In local mode it's kept inside the settings as a data address instead.
+export async function uploadPhoto(file) {
+  const { resizeImage, blobToDataUrl } = await import('./image.js');
+  if (isLocal) return blobToDataUrl(await resizeImage(file, 700, 0.8));
+  const blob = await resizeImage(file, 1200, 0.82);
+  const c = await sb();
+  const bucket = c.storage.from(config.imageBucket || 'recipe-images');
+  const path = `sweaty/${userId}/${uuid()}.jpg`;
+  const { error } = await bucket.upload(path, blob, { contentType: 'image/jpeg', cacheControl: '31536000' });
+  if (error) throw new Error(`Couldn’t upload the picture: ${error.message || 'no connection'}.`);
+  return bucket.getPublicUrl(path).data.publicUrl;
+}
+
 // ---------- Backup ----------
 
 export async function everything() {

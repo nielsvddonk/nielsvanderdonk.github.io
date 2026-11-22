@@ -30,7 +30,7 @@ export const sessions = {
   },
   lowerA: {
     name: 'Lower body A', legs: 3,
-    slots: [['squat', 3, '6-10'], ['hinge', 3, '8-10'], ['lunge', 3, '8-12'], ['legcurl', 2, '8-12'], ['calves', 3, '10-15'], ['side', 2, '8-12'], ['hips', 2, '10-15']],
+    slots: [['squat', 3, '6-10'], ['hinge', 3, '8-10'], ['lunge', 3, '8-12'], ['legcurl', 2, '8-12'], ['calves', 3, '10-15'], ['side', 2, '8-12'], ['hips', 2, '10-15'], ['plyo', 2, '5-8']],
   },
   upperB: {
     name: 'Upper body B', legs: 0,
@@ -38,7 +38,7 @@ export const sessions = {
   },
   lowerB: {
     name: 'Lower body B', legs: 3,
-    slots: [['hinge:1', 3, '6-10'], ['lunge:1', 3, '8-12'], ['bridge', 3, '8-15'], ['squat:1', 2, '10-15'], ['calves:1', 3, '12-20'], ['core', 2, '8-12'], ['carry', 2]],
+    slots: [['hinge:1', 3, '6-10'], ['lunge:1', 3, '8-12'], ['bridge', 3, '8-15'], ['squat:1', 2, '10-15'], ['calves:1', 3, '12-20'], ['core', 2, '8-12'], ['carry', 2], ['plyo:1', 2, '5-8']],
   },
   push: {
     name: 'Push', legs: 0,
@@ -50,7 +50,7 @@ export const sessions = {
   },
   legs: {
     name: 'Legs', legs: 3,
-    slots: [['squat', 3, '6-10'], ['hinge', 3, '8-10'], ['lunge', 3, '8-12'], ['bridge', 3, '10-15'], ['calves', 3, '12-20'], ['core', 2, '8-12']],
+    slots: [['squat', 3, '6-10'], ['hinge', 3, '8-10'], ['lunge', 3, '8-12'], ['bridge', 3, '10-15'], ['calves', 3, '12-20'], ['core', 2, '8-12'], ['plyo', 2, '5-8']],
   },
 };
 
@@ -67,13 +67,18 @@ export const splits = {
 };
 
 // The short optional routines, on days without strength. Here the slots are exercise ids.
+// "when" shows on the day's card.
 export const routines = {
+  drills: {
+    name: 'Running drills', when: 'before your run, after 10 min easy jogging',
+    slots: [['leg-swings', 1, '10-15'], ['a-skip', 2], ['b-skip', 2], ['high-knees', 2], ['butt-kicks', 2], ['carioca', 1]],
+  },
   core: {
-    name: 'Runner’s core',
+    name: 'Runner’s core', when: 'after your run',
     slots: [['dead-bug', 2, '8-10'], ['side-plank', 2], ['single-leg-glute-bridge', 2, '10-12'], ['side-lying-leg-raise', 2, '12-15'], ['single-leg-calf-raise', 2, '12-15']],
   },
   mobility: {
-    name: 'Mobility',
+    name: 'Mobility', when: 'any time, or after your run',
     slots: [['leg-swings', 1, '10-15'], ['hip-flexor-stretch', 1], ['calf-stretch', 1], ['hamstring-stretch', 1], ['pigeon', 1], ['worlds-greatest-stretch', 1, '5'], ['childs-pose', 1]],
   },
 };

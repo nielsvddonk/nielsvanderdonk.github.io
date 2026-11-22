@@ -9,7 +9,7 @@
 //   #/run/<day>[/<id>]     log or change a run
 //   #/food[/<day>]         food and weight             #/food/<day>/add   add food
 //   #/me                   settings                    #/me/foods         your own foods
-//   #/library[/<id>]       the exercise library
+//   #/exercises[/<id>]     the exercises: how to, pictures, your own
 //   #/setup                the first time
 //
 // Each page is a function (el, args) that fills `el` and may return { refresh(), destroy() }.
@@ -38,8 +38,8 @@ const routes = [
   { re: new RegExp(`^/food/${DAY}/add$`), view: foodAddView, tab: 'food', args: (m) => ({ date: m[1] }) },
   { re: /^\/me$/, view: meView, tab: 'me' },
   { re: /^\/me\/foods$/, view: myFoodsView, tab: 'me' },
-  { re: /^\/library$/, view: libraryView, tab: 'me' },
-  { re: /^\/library\/([\w%-]+)$/, view: exerciseView, tab: 'me', args: (m) => ({ id: m[1] }) },
+  { re: /^\/exercises$/, view: libraryView, tab: 'exercises' },
+  { re: /^\/exercises\/([\w%-]+)$/, view: exerciseView, tab: 'exercises', args: (m) => ({ id: m[1] }) },
   { re: /^\/setup$/, view: setupView, focus: true },
 ];
 
@@ -57,7 +57,8 @@ function chrome(r) {
     a.classList.toggle('is-active', on);
     if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
-  document.getElementById('mode').textContent = store.isLocal ? 'Local mode: saved in this browser only' : '';
+  const mode = document.getElementById('mode');
+  if (mode) mode.textContent = store.isLocal ? 'Local mode: saved in this browser only' : '';
 }
 
 async function route() {
@@ -66,6 +67,7 @@ async function route() {
   current?.destroy?.();
   current = null;
   const path = (location.hash.slice(1) || '/').split('?')[0];
+  if (path.startsWith('/library')) { location.replace(`#${path.replace('/library', '/exercises')}`); return; } // old address
   const hasSettings = Boolean(store.getSettings());
   if (!hasSettings && path !== '/setup') { location.replace('#/setup'); return; }
   if (hasSettings && path === '/setup') { location.replace('#/'); return; }

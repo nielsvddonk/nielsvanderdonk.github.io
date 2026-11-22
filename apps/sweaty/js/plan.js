@@ -81,13 +81,19 @@ export function runPaces(s) {
 }
 export const easyRange = (p) => `${fmtPace(p.easy[0])}–${fmtPace(p.easy[1])}/km`;
 
+// The days of a week: your usual week (Me page), or this week's own days (Week → Change this week).
+export const rhythmOf = (s, weekChange) => ({
+  days: weekChange?.days?.length === 7 ? weekChange.days : s.days,
+  longDay: weekChange?.longDay ?? s.run.longDay,
+});
+
 // Which run day does what: the long run on your long-run day, the hard run as far from it as
 // possible, the rest easy (and with 4+ runs, the day after the long run is a recovery run).
-export function runRoles(s) {
-  const runDays = s.days.map((d, k) => (d.run ? k : -1)).filter((k) => k >= 0);
+export function runRoles({ days, longDay: day }) {
+  const runDays = days.map((d, k) => (d.run ? k : -1)).filter((k) => k >= 0);
   const roles = {};
   if (!runDays.length) return roles;
-  const longDay = Number(s.run.longDay);
+  const longDay = Number(day);
   const long = runDays.includes(longDay) ? longDay : runDays[runDays.length - 1];
   roles[long] = 'long';
   const others = runDays.filter((k) => k !== long);
@@ -234,8 +240,8 @@ function bestOrder(list, days, roles) {
 }
 
 const orderCache = new Map();
-function liftDays(s, roles, i) {
-  const days = s.days.map((d, k) => (d.lift ? k : -1)).filter((k) => k >= 0);
+function liftDays(rhythm, roles, i) {
+  const days = rhythm.days.map((d, k) => (d.lift ? k : -1)).filter((k) => k >= 0);
   if (!days.length) return {};
   let list = (splits[days.length] || splits[7]).slice(0, days.length);
   if (days.length === 1) list = [splits[1][i % splits[1].length]];
@@ -258,19 +264,21 @@ export function liftFor(s, date, key) {
   return liftInfo(key, { i, ph, cut: isCutback(i, ph) });
 }
 
-// The optional short routine: core after an easy run, mobility on rest days and after the long run.
+// The optional short routine: running drills before a hard run, core after an easy run,
+// mobility on rest days and after the long run.
 export function extraFor(day) {
   if (day.lift) return null;
   const t = day.run?.type;
   if (t === 'race') return null;
   if (!t || t === 'long') return 'mobility';
   if (t === 'easy' || t === 'recovery') return 'core';
+  if (t === 'quality') return 'drills';
   return null;
 }
 
 // ---------- Weeks and days ----------
 
-export function week(s, date) {
+export function week(s, date, weekChange = null) {
   const monday = mondayOf(date);
   const i = weekIndex(s, monday);
   const dates = Array.from({ length: 7 }, (_, k) => addDays(monday, k));
@@ -283,8 +291,9 @@ export function week(s, date) {
   const cut = isCutback(i, ph);
   const L = longRuns(s, i)[i];
   const p = runPaces(s);
-  const roles = runRoles(s);
-  const lifts = liftDays(s, roles, i);
+  const rhythm = rhythmOf(s, weekChange);
+  const roles = runRoles(rhythm);
+  const lifts = liftDays(rhythm, roles, i);
   const ctx = { s, i, ph, cut, L, p };
   let easyNumber = 0;
   const days = dates.map((d, k) => {
@@ -297,12 +306,12 @@ export function week(s, date) {
     day.extra = extraFor(day);
     return day;
   });
-  return { ...head, phase: ph.key, wr: ph.wr, cutback: cut, longRun: L, days, km: sum(days, (d) => d.run?.km) };
+  return { ...head, phase: ph.key, wr: ph.wr, cutback: cut, longRun: L, days, km: sum(days, (d) => d.run?.km), ownWeek: Boolean(weekChange?.days) };
 }
 
 // One day, with your own change for that day (if any) on top.
-export function day(s, date, change) {
-  const w = week(s, date);
+export function day(s, date, change, weekChange = null) {
+  const w = week(s, date, weekChange);
   const d = { ...w.days[weekday(date)], week: w, changed: false };
   if (change && !w.before) {
     if ('run' in change) d.run = change.run;

@@ -1,9 +1,23 @@
 // A week of the plan, and the whole plan at a glance.
 
+import * as store from '../store.js';
 import * as model from '../model.js';
 import * as plan from '../plan.js';
-import { DAY_SHORT, addDays, esc, fmt, fmtDate, fmtKm, fmtPace, fmtShort, fmtTime, mondayOf, parseDay, sum, today, weekday } from '../util.js';
-import { ICON, mark } from './parts.js';
+import { DAY_NAMES, DAY_SHORT, addDays, esc, fmt, fmtDate, fmtKm, fmtPace, fmtShort, fmtTime, mondayOf, parseDay, sum, today, weekday } from '../util.js';
+import { ICON, mark, sheet, toast } from './parts.js';
+
+
+// "3 runs and 3 strength sessions. Long run on Sunday. Rest on Saturday."
+function rhythmSummary(days, longDay) {
+  const runs = days.filter((d) => d.run).length;
+  const lifts = days.filter((d) => d.lift).length;
+  const rest = days.map((d, k) => (!d.run && !d.lift ? DAY_NAMES[k] : null)).filter(Boolean);
+  const roles = plan.runRoles({ days, longDay });
+  const long = Object.keys(roles).find((k) => roles[k] === 'long');
+  return `${runs} ${runs === 1 ? 'run' : 'runs'} and ${lifts} strength ${lifts === 1 ? 'session' : 'sessions'}.`
+    + (long !== undefined ? ` Long run on ${DAY_NAMES[long]}.` : '')
+    + (rest.length ? ` Rest on ${rest.join(', ')}.` : ' No rest day.');
+}
 
 function paceLine(s) {
   const p = plan.runPaces(s);
@@ -34,9 +48,76 @@ export function weekView(el, { date }) {
       </a></li>`;
   }
 
+  // Different days just for this week: a different rest day, an extra run, …
+  function openWeekDays() {
+    const s = model.settings();
+    const w = model.week(monday);
+    const row = model.weekChangeRow(monday);
+    const rhythm = plan.rhythmOf(s, row?.data);
+    const draft = rhythm.days.map((d) => ({ run: Boolean(d.run), lift: Boolean(d.lift) }));
+    const dayChanges = w.dates.filter((d) => model.changeRow(d));
+    const dlg = sheet(`
+      <h2>Change week ${w.number}</h2>
+      <p class="muted small">Only for ${esc(fmtShort(monday))} – ${esc(fmtShort(addDays(monday, 6)))}. Your usual week stays as it is (Me page).</p>
+      <div class="rhythm">
+        ${DAY_SHORT.map((d, k) => `
+          <div class="rhythm-row"><span>${d}</span>
+            <button type="button" class="tog${draft[k].run ? ' is-on' : ''}" data-day="${k}" data-what="run" aria-pressed="${draft[k].run}">Run</button>
+            <button type="button" class="tog${draft[k].lift ? ' is-on' : ''}" data-day="${k}" data-what="lift" aria-pressed="${draft[k].lift}">Strength</button>
+          </div>`).join('')}
+      </div>
+      <label class="field"><span class="label">Long run on</span>
+        <select name="longDay">${DAY_NAMES.map((n, k) => `<option value="${k}"${k === Number(rhythm.longDay) ? ' selected' : ''}>${n}</option>`).join('')}</select>
+      </label>
+      <p class="summary" data-sum></p>
+      ${dayChanges.length ? '<p class="hint">Days you changed one by one this week go back to the plan, so the week fits together again.</p>' : ''}
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary" data-save>Save</button>
+        ${row ? '<button type="button" class="btn" data-reset>Back to my usual week</button>' : ''}
+        <button type="button" class="btn btn-quiet" data-close>Cancel</button>
+      </div>`);
+    const longSelect = dlg.querySelector('[name="longDay"]');
+    const summarize = () => { dlg.querySelector('[data-sum]').textContent = rhythmSummary(draft, Number(longSelect.value)); };
+    longSelect.addEventListener('change', summarize);
+    dlg.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-day]');
+      if (!b) return;
+      const k = Number(b.dataset.day);
+      draft[k][b.dataset.what] = !draft[k][b.dataset.what];
+      b.classList.toggle('is-on', draft[k][b.dataset.what]);
+      b.setAttribute('aria-pressed', String(draft[k][b.dataset.what]));
+      summarize();
+    });
+    summarize();
+    const clearDayChanges = () => w.dates.forEach((d) => { const r = model.changeRow(d); if (r) store.remove(r.id); });
+    dlg.querySelector('[data-save]').addEventListener('click', () => {
+      const longDay = Number(longSelect.value);
+      const usual = JSON.stringify(s.days.map((d) => ({ run: Boolean(d.run), lift: Boolean(d.lift) }))) === JSON.stringify(draft)
+        && longDay === Number(s.run.longDay);
+      clearDayChanges();
+      if (usual) { if (row) store.remove(row.id); }
+      else store.put({ id: row?.id, day: monday, kind: 'week', data: { days: draft, longDay } });
+      dlg.close();
+      draw();
+      toast(usual ? 'Back to your usual week' : `Week ${w.number} changed`);
+    });
+    dlg.querySelector('[data-reset]')?.addEventListener('click', () => {
+      clearDayChanges();
+      store.remove(row.id);
+      dlg.close();
+      draw();
+      toast('Back to your usual week');
+    });
+  }
+
+  el.addEventListener('click', (e) => {
+    if (e.target.closest('[data-act="week-days"]')) openWeekDays();
+  });
+
   function draw() {
     const s = model.settings();
     const w = model.week(monday);
+    const rhythm = plan.rhythmOf(s, model.weekChangeRow(monday)?.data);
     const fed = w.days.filter((d) => model.eaten(d.date).count > 0);
     const avgEaten = fed.length ? sum(fed, (d) => model.eaten(d.date).kcal) / fed.length : 0;
     const avgBudget = fed.length ? sum(fed, (d) => model.budget(d.date).total) / fed.length : 0;
@@ -49,7 +130,7 @@ export function weekView(el, { date }) {
         <div class="page-title">
           <p class="kicker">${esc(fmtShort(monday))} – ${esc(fmtShort(addDays(monday, 6)))}</p>
           <h1>${w.before ? 'Before your plan' : `Week ${w.number}${w.total ? ` <span class="muted">of ${w.total}</span>` : ''}`}</h1>
-          ${w.before ? '' : `<p class="muted small"><strong>${plan.PHASES[w.phase]}${w.cutback ? ' · easy week' : ''}</strong></p>`}
+          ${w.before ? '' : `<p class="muted small"><strong>${plan.PHASES[w.phase]}${w.cutback ? ' · easy week' : ''}</strong>${w.ownWeek ? ' · your own days' : ''}</p>`}
         </div>
         <a class="arrow" href="#/week/${addDays(monday, 7)}" aria-label="Next week">${ICON.right}</a>
       </header>
@@ -60,6 +141,11 @@ export function weekView(el, { date }) {
         <div class="stat"><span class="label">Food</span><b>${fed.length ? fmt(avgEaten) : '–'}</b><span class="muted small">${fed.length ? `a day, of ${fmt(avgBudget)}` : 'kcal a day'}</span></div>
       </div>
       <ul class="days">${w.days.map(dayRow).join('')}</ul>
+      ${w.before ? '' : `
+        <div class="week-actions">
+          <p class="muted small">${esc(rhythmSummary(rhythm.days, rhythm.longDay))}</p>
+          <button type="button" class="btn" data-act="week-days">${w.ownWeek ? 'Change this week again' : 'Change this week’s days'}</button>
+        </div>`}
       ${monday !== mondayOf(t) ? `<p><a class="btn btn-quiet" href="#/week">Back to this week</a></p>` : ''}
       <p class="muted small">${esc(paceLine(s))}</p>
       <p><a class="btn" href="#/plan">The whole plan</a></p>`;
@@ -78,7 +164,7 @@ export function planView(el) {
   const raceWeek = s.run.raceDate ? plan.weekIndex(s, s.run.raceDate) : null;
   const last = raceWeek !== null && raceWeek >= 0 ? raceWeek : Math.max(current + 8, 11);
   const weeks = [];
-  for (let i = 0; i <= last; i++) weeks.push(plan.week(s, addDays(s.run.start, 7 * i)));
+  for (let i = 0; i <= last; i++) weeks.push(model.planWeek(addDays(s.run.start, 7 * i)));
   const maxKm = Math.max(1, ...weeks.map((w) => w.km));
   const left = raceWeek !== null ? Math.max(0, raceWeek - current) : null;
   const recent = `from your ${s.run.recentTime} ${({ 5: '5K', 10: '10K', 21.0975: 'half marathon', 42.195: 'marathon' })[s.run.recentKm] || 'race'}`;

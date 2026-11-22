@@ -414,6 +414,50 @@ a.result:hover .row-title, button.result:hover .row-title { text-decoration: und
 .amount-kcal { font-size: 1.05rem; margin: 2px 0 6px; }
 .amount-kcal b { font-size: 1.9rem; }
 
+/* ---------- Exercises ---------- */
+
+.lib-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 4px; }
+.lib-head h1 { margin: 0; }
+.search + .chips { margin-top: 12px; }
+.ex-row { gap: 12px; padding: 8px 2px; }
+.ex-thumb { width: 64px; height: 54px; flex: none; display: grid; place-items: center; border-radius: 8px; background: var(--soft); overflow: hidden; }
+.ex-thumb img { width: 100%; height: 100%; object-fit: contain; background: #fff; }
+.ex-thumb .body-map { width: 60px; height: auto; }
+.ex-list a { text-decoration: none; }
+.ex-list a:hover { text-decoration: underline; }
+.when { margin: -2px 0 6px; }
+
+/* The muscle diagram: grey body, the trained muscles green. */
+.body-map { display: block; }
+.body-map .bm-n { fill: color-mix(in srgb, var(--fg) 11%, var(--bg)); }
+.body-map .bm-m { fill: color-mix(in srgb, var(--fg) 22%, var(--bg)); }
+.body-map .is-main { fill: var(--accent); }
+.body-map .is-also { fill: color-mix(in srgb, var(--accent) 42%, var(--bg)); }
+.body-map .bm-t { font: 10px var(--font); fill: var(--muted); text-anchor: middle; }
+.ex-visual { display: grid; gap: 12px; margin: 10px 0 4px; }
+.ex-map .body-map { width: 100%; max-width: 300px; margin: 0 auto; }
+.ex-pics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.ex-pics img { width: 100%; aspect-ratio: 1; object-fit: contain; background: #fff; border-radius: var(--radius); border: 1px solid var(--line); }
+.ex-pics img:only-child { grid-column: 1 / -1; aspect-ratio: auto; max-height: 380px; }
+@media (min-width: 560px) { .ex-visual.has-pics { grid-template-columns: 1fr 1fr; align-items: center; } }
+.legend { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 6px; color: var(--muted); margin: 6px 0; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-left: 8px; }
+.dot:first-child { margin-left: 0; }
+.dot.is-main { background: var(--accent); }
+.dot.is-also { background: color-mix(in srgb, var(--accent) 42%, var(--bg)); }
+.credit { font-size: .75rem; color: var(--muted); text-align: center; margin: 0 0 1em; }
+.tips, .facts { padding-left: 1.2em; margin: 0 0 1em; }
+.tips li, .facts li { margin: 3px 0; }
+.notes { white-space: pre-wrap; background: var(--soft); border-radius: var(--radius); padding: 10px 12px; }
+.video { position: relative; aspect-ratio: 16 / 9; margin: 0 0 10px; border-radius: var(--radius); overflow: hidden; background: #000; }
+.video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.ex-actions { margin: 0 0 6px; }
+.photo-edit { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.photo-preview img { width: 72px; height: 72px; object-fit: cover; border-radius: var(--radius); }
+.photo-preview:empty { display: none; }
+.week-actions { text-align: center; margin: 0 0 18px; }
+.week-actions p { margin-bottom: 8px; }
+
 /* ---------- Me ---------- */
 
 .me-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }

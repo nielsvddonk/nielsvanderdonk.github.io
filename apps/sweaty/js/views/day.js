@@ -5,7 +5,7 @@ import * as store from '../store.js';
 import * as model from '../model.js';
 import * as plan from '../plan.js';
 import * as strength from '../strength.js';
-import { sessions } from '../../data/sessions.js';
+import { routines, sessions } from '../../data/sessions.js';
 import { DAY_SHORT, addDays, dayName, esc, fmt, fmtDate, fmtKm, fmtPace, fmtTime, local, num, sum, today, weekday } from '../util.js';
 import { ICON, bar, mark, sheet, toast } from './parts.js';
 
@@ -23,7 +23,7 @@ export function summary(d) {
 // Saves your own version of a day; the same as the plan → the change is removed.
 function saveChange(date, change) {
   const s = model.settings();
-  const base = plan.day(s, date, null);
+  const base = plan.day(s, date, null, model.weekChangeRow(date)?.data);
   const clean = { ...change };
   if ('run' in clean && JSON.stringify(clean.run) === JSON.stringify(base.run)) delete clean.run;
   if ('lift' in clean && JSON.stringify(clean.lift) === JSON.stringify(base.lift)) delete clean.lift;
@@ -98,7 +98,7 @@ export default function dayView(el, { date }) {
         <div class="card-top"><span class="kicker">Strength${session ? ` · about ${session.minutes} min` : ''}${l?.optional ? ' · optional' : ''}</span>${mark(st)}</div>
         ${session ? `
           <h2>${esc(l.name)}</h2>
-          <ol class="ex-list">${session.items.map((it) => `<li><span>${esc(strength.find(s, it.id)?.name)}</span><span class="muted">${strength.dose(it)}</span></li>`).join('')}</ol>
+          <ol class="ex-list">${session.items.map((it) => `<li><a href="#/exercises/${encodeURIComponent(it.id)}">${esc(strength.find(s, it.id)?.name)}</a><span class="muted">${strength.dose(it)}</span></li>`).join('')}</ol>
           ${note ? `<p class="hint">${note}</p>` : ''}` : ''}
         ${done ? `<ul class="done-list">${done}</ul>` : ''}
         ${st === 'todo' || st === 'missed' ? `
@@ -119,8 +119,9 @@ export default function dayView(el, { date }) {
     return `
       <section class="card card-quiet${st === 'done' ? ' is-done' : ''}">
         <div class="card-top"><span class="kicker">Optional${session ? ` · about ${session.minutes} min` : ''}</span>${st === 'done' ? mark('done') : ''}</div>
+        ${routines[d.extra]?.when && st !== 'done' ? `<p class="muted small when">Best ${esc(routines[d.extra].when)}</p>` : ''}
         ${session ? `<h2>${esc(session.name)}</h2>
-          <p class="muted small">${session.items.map((it) => esc(strength.find(s, it.id)?.name)).join(' · ')}</p>` : ''}
+          <p class="muted small">${session.items.map((it) => `<a href="#/exercises/${encodeURIComponent(it.id)}">${esc(strength.find(s, it.id)?.name)}</a>`).join(' · ')}</p>` : ''}
         ${done ? `<ul class="done-list">${done}</ul>` : ''}
         ${session && st !== 'done' ? `<a class="btn" href="#/workout/${date}/${d.extra}">${going ? 'Continue' : 'Start'}</a>` : ''}
       </section>`;
@@ -162,7 +163,7 @@ export default function dayView(el, { date }) {
   function openChange() {
     const s = model.settings();
     const d = model.day(date);
-    const base = plan.day(s, date, null);
+    const base = plan.day(s, date, null, model.weekChangeRow(date)?.data);
     const change = model.changeRow(date)?.data || {};
     const w = model.week(date);
     let runValue = 'none';

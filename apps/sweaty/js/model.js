@@ -5,18 +5,21 @@ import * as store from './store.js';
 import * as plan from './plan.js';
 import * as strength from './strength.js';
 import * as cal from './calories.js';
-import { addDays, sum, today } from './util.js';
+import { addDays, mondayOf, sum, today } from './util.js';
 
 export const settings = () => store.getSettings();
 
 const byTime = (a, b) => (a.data.at || 0) - (b.data.at || 0);
 
 export const changeRow = (date) => store.onDay(date, 'plan')[0] || null;
+// This week's own days (Week → Change this week), saved on the week's Monday.
+export const weekChangeRow = (date) => store.onDay(mondayOf(date), 'week')[0] || null;
+export const planWeek = (date) => plan.week(settings(), date, weekChangeRow(date)?.data);
 
 // Everything about one day.
 export function day(date) {
   const s = settings();
-  const d = plan.day(s, date, changeRow(date)?.data);
+  const d = plan.day(s, date, changeRow(date)?.data, weekChangeRow(date)?.data);
   const runs = store.onDay(date, 'run').sort(byTime);
   const workouts = store.onDay(date, 'workout').sort(byTime);
   const skips = store.onDay(date, 'skip');
@@ -41,7 +44,7 @@ export function day(date) {
 }
 
 export function week(date) {
-  const w = plan.week(settings(), date);
+  const w = planWeek(date);
   const days = w.dates.map((d) => day(d));
   return {
     ...w,

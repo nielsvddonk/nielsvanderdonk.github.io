@@ -4,18 +4,36 @@ import { exercises, REST, WEIGHTED } from '../data/exercises.js';
 import { sessions, routines } from '../data/sessions.js';
 import { fmtKg } from './util.js';
 
-export const library = (s) => [...exercises, ...(s?.myExercises || [])];
-export const find = (s, id) => (id ? library(s).find((e) => e.id === id) || null : null);
+// The library: the exercises from data/exercises.js with your own changes on top
+// (Exercises → Edit: explanation, notes, video, picture, hidden), plus your own exercises.
+const libraries = new WeakMap();
+const builtIn = { list: exercises, byId: new Map(exercises.map((e) => [e.id, e])) };
+function lib(s) {
+  if (!s) return builtIn;
+  let l = libraries.get(s);
+  if (!l) {
+    const edits = s.exerciseEdits || {};
+    const list = [...exercises, ...(s.myExercises || []).map((e) => ({ ...e, mine: true }))]
+      .map((e) => (edits[e.id] ? { ...e, ...edits[e.id], original: e } : e));
+    l = { list, byId: new Map(list.map((e) => [e.id, e])) };
+    libraries.set(s, l);
+  }
+  return l;
+}
+export const library = (s) => lib(s).list;
+export const find = (s, id) => (id ? lib(s).byId.get(id) || null : null);
 export const owned = (s) => new Set(s?.lift?.gear || []);
 export const canDo = (ex, gear) => ex.gear.every((g) => gear.has(g));
+// Can it be put in a workout: you have the gear, and you didn't hide it.
+export const usable = (ex, gear) => !ex.hidden && canDo(ex, gear);
 export const isWeighted = (ex) => Boolean(ex) && ex.gear.some((g) => WEIGHTED.includes(g));
 export const template = (key) => sessions[key] || routines[key] || null;
 export const isRoutine = (key) => Boolean(routines[key]);
 
-// Every exercise of a pattern you have the gear for, in the order of the library.
+// Every exercise of a pattern you have the gear for (and didn't hide), in the order of the library.
 export function options(s, pattern) {
   const gear = owned(s);
-  return library(s).filter((e) => e.pattern === pattern && canDo(e, gear));
+  return library(s).filter((e) => e.pattern === pattern && usable(e, gear));
 }
 
 const range = (spec) => {
@@ -40,13 +58,13 @@ export function build(s, key, mod = {}) {
     if (items.length >= limit) return;
     const slot = `${key}.${n}`;
     let ex = find(s, s.swaps?.[slot]);
-    if (ex && (!canDo(ex, gear) || used.has(ex.id))) ex = null;
+    if (ex && (!usable(ex, gear) || used.has(ex.id))) ex = null;
     if (!ex) {
       let pattern = null;
       let pick = 0;
       if (routine) {
         const planned = find(s, spec);
-        if (planned && canDo(planned, gear) && !used.has(planned.id)) ex = planned;
+        if (planned && usable(planned, gear) && !used.has(planned.id)) ex = planned;
         else pattern = planned?.pattern;
       } else {
         const [p, v] = spec.split(':');
@@ -115,7 +133,7 @@ export function advice(s, ex, item, last) {
   }
   if (allTop) {
     const harder = find(s, ex.harder);
-    if (harder && canDo(harder, owned(s))) return { text: `${said}, all at the top. Ready for the harder version?`, harder: harder.id };
+    if (harder && usable(harder, owned(s))) return { text: `${said}, all at the top. Ready for the harder version?`, harder: harder.id };
     return { text: `${said}, all at the top. ${item.time ? 'Hold a bit longer' : 'Lower more slowly (3 seconds)'} to make it harder.` };
   }
   return { text: `${said}. Try to beat it.` };

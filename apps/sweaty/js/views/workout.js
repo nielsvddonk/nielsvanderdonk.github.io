@@ -7,8 +7,9 @@ import * as strength from '../strength.js';
 import * as wake from '../wakelock.js';
 import { warmup } from '../../data/sessions.js';
 import { MUSCLES, PATTERNS, REST } from '../../data/exercises.js';
-import { dayName, esc, fmt, fmtKg, howToVideo, local, num, sum, today } from '../util.js';
+import { dayName, esc, fmt, fmtKg, local, num, sum, today } from '../util.js';
 import { ICON, sheet, toast } from './parts.js';
+import { exerciseInfo } from './library.js';
 
 const muscleName = (m) => MUSCLES.find(([k]) => k === m)?.[1].toLowerCase() || m;
 // In workout mode `sets` is the list of sets; the plan helpers want the number.
@@ -134,7 +135,7 @@ export default function workoutView(el, { date, key }) {
       <p class="target">${strength.dose(asPlan(it))}${it.time ? '' : ' reps'} · rest ${it.rest >= 60 ? `${fmt(it.rest / 60, 1)} min` : `${it.rest} s`}</p>
       ${it.advice?.text ? `<p class="tip">${esc(it.advice.text)}</p>` : ''}
       ${harder ? `<p><button type="button" class="btn btn-small" data-swap-to="${harder.id}">Switch to ${esc(harder.name)}</button></p>` : ''}
-      <p class="how">${esc(ex.how)} <a href="${howToVideo(ex.name)}" target="_blank" rel="noopener">Watch how ›</a></p>
+      <p class="how">${esc(ex.how)} <button type="button" class="link" data-act="info">Picture, tips and video ›</button></p>
       <div class="sets">${it.sets.map((set, j) => setRow(it, ex, set, j)).join('')}</div>
       <p><button type="button" class="link small" data-act="add-set">+ Add a set</button></p>
       <div class="wo-nav">
@@ -313,6 +314,11 @@ export default function workoutView(el, { date, key }) {
       local.remove(KEY);
       location.hash = back;
     } else if (act === 'swap') openSwap();
+    else if (act === 'info') {
+      const ex = strength.find(model.settings(), it.id);
+      sheet(`<h2>${esc(ex.name)}</h2>${exerciseInfo(model.settings(), ex, { links: false, history: false })}
+        <div class="btn-row"><button type="button" class="btn btn-primary" data-close>Back to the workout</button></div>`, { className: 'sheet-tall' });
+    }
     else if (act === 'add-set') {
       const last = it.sets[it.sets.length - 1] || {};
       it.sets.push({ ...last, done: false });

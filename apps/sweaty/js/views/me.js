@@ -65,7 +65,7 @@ function runSummary(s) {
 function weekSummary(s) {
   const runs = s.days.filter((d) => d.run).length;
   const lifts = s.days.filter((d) => d.lift).length;
-  const roles = plan.runRoles(s);
+  const roles = plan.runRoles(plan.rhythmOf(s));
   const parts = [`${runs} ${runs === 1 ? 'run' : 'runs'} and ${lifts} strength ${lifts === 1 ? 'session' : 'sessions'} a week.`];
   if (runs) {
     const names = { long: 'long run', quality: 'hard run', easy: 'easy', recovery: 'recovery' };
@@ -149,7 +149,7 @@ function formHtml(s, { setup }) {
         ${field('Barbell goes up by', input('lift.step.barbell', s.lift.step.barbell, { unit: 'kg', placeholder: '2.5' }))}
       </div>
       <p class="hint">The smallest step your weights allow: Sweaty adds this when you're ready for more.</p>
-      ${setup ? '' : `<p class="small"><a href="#/library">Exercise library</a>${Object.keys(s.swaps || {}).length ? ` · <button type="button" class="link" data-act="reset-swaps">Undo your ${Object.keys(s.swaps).length} swapped exercises</button>` : ''}</p>`}
+      ${setup ? '' : `<p class="small"><a href="#/exercises">Exercise library</a>${Object.keys(s.swaps || {}).length ? ` · <button type="button" class="link" data-act="reset-swaps">Undo your ${Object.keys(s.swaps).length} swapped exercises</button>` : ''}</p>`}
     </section>`;
 }
 
@@ -269,7 +269,7 @@ export function meView(el) {
     <form id="me" novalidate>${formHtml(draft, { setup: false })}</form>
     <section class="card form-card">
       <h2>Lists</h2>
-      <p><a href="#/library">Exercises</a> <span class="muted small">— the library by muscle, and your own</span></p>
+      <p><a href="#/exercises">Exercises</a> <span class="muted small">— the library by muscle, and your own</span></p>
       <p><a href="#/me/foods">My foods</a> <span class="muted small">— ${fmt((draft.myFoods || []).length)} of your own</span></p>
     </section>
     <section class="card form-card">
