@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#111"/>
+  <!-- a drop of sweat with a dumbbell in it -->
+  <path d="M256 70C232 112 128 214 128 310a128 128 0 0 0 256 0C384 214 280 112 256 70Z" fill="#fff"/>
+  <rect x="196" y="304" width="120" height="22" rx="11" fill="#111"/>
+  <rect x="176" y="268" width="32" height="94" rx="12" fill="#111"/>
+  <rect x="304" y="268" width="32" height="94" rx="12" fill="#111"/>
+  <rect x="152" y="288" width="22" height="54" rx="9" fill="#111"/>
+  <rect x="338" y="288" width="22" height="54" rx="9" fill="#111"/>
+</svg>

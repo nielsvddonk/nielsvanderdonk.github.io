@@ -30,4 +30,11 @@ export const apps = [
     description: 'Our watchlist in a hat: grab a random movie for tonight.',
     public: true,
   },
+  {
+    name: 'Sweaty',
+    path: 'sweaty/',
+    icon: 'sweaty/icon.svg',
+    description: 'Marathon plan, home workouts and a calorie counter.',
+    public: false,
+  },
 ];
