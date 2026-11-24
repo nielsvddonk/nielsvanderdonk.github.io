@@ -5,6 +5,7 @@ import * as store from '../store.js';
 import * as model from '../model.js';
 import * as plan from '../plan.js';
 import * as cal from '../calories.js';
+import * as nav from '../nav.js';
 import { GEAR } from '../../data/exercises.js';
 import { splits, sessions } from '../../data/sessions.js';
 import { defaults } from '../defaults.js';
@@ -243,7 +244,7 @@ export function setupView(el) {
     draft.run.start = plan.startMonday(today());
     store.saveSettings(draft);
     store.put({ day: today(), kind: 'weight', data: { kg: draft.body.weight, at: Date.now() } });
-    location.hash = '#/';
+    nav.go('#/', { replace: true });
   });
 }
 
@@ -356,7 +357,7 @@ export function myFoodsView(el) {
     const s = model.settings();
     const list = [...(s.myFoods || [])].sort((a, b) => a.name.localeCompare(b.name));
     el.innerHTML = `
-      <p class="back"><a href="#/me">‹ Me</a></p>
+      ${nav.backLink('#/me')}
       <h1>My foods</h1>
       <p class="muted">Your own foods and meals, from a label or your usual portion. They come first when you search.</p>
       <p><button type="button" class="btn btn-primary" data-act="new">Create a food</button></p>

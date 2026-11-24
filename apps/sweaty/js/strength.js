@@ -31,10 +31,23 @@ export const template = (key) => sessions[key] || routines[key] || null;
 export const isRoutine = (key) => Boolean(routines[key]);
 
 // Every exercise of a pattern you have the gear for (and didn't hide), in the order of the library.
-export function options(s, pattern) {
-  const gear = owned(s);
+// `gear`: the equipment to count on (normally what you ticked on the Me page).
+export function options(s, pattern, gear = owned(s)) {
   return library(s).filter((e) => e.pattern === pattern && usable(e, gear));
 }
+
+// Your favourite exercises (★): sessions pick them first.
+export const favourites = (s) => new Set(s?.favourites || []);
+
+// When no exercise of a kind fits your gear (or you hid them all), Sweaty takes one of these
+// related kinds instead, so the session keeps training that part of you.
+export const FALLBACK = {
+  squat: ['lunge', 'plyo'], lunge: ['squat'], hinge: ['bridge', 'legcurl'], bridge: ['hinge', 'hips'],
+  legcurl: ['bridge', 'hinge'], calves: ['plyo'], push: ['press', 'fly', 'triceps'], press: ['push', 'raise'],
+  row: ['lats', 'rear'], lats: ['row', 'rear'], rear: ['row', 'lats'], raise: ['press', 'rear'],
+  curl: ['row', 'lats'], triceps: ['push', 'press'], fly: ['push'], core: ['side'], side: ['core'],
+  hips: ['bridge', 'side'], carry: ['side', 'core'], plyo: ['squat', 'lunge'], drills: ['plyo'], mobility: [],
+};
 
 const range = (spec) => {
   const [a, b] = String(spec).split('-').map(Number);
@@ -46,12 +59,23 @@ const LIMIT = { 30: 4, 45: 6, 60: 8 };
 
 // A session ready to do: { key, name, routine, minutes, items: [{ slot, id, sets, target, … }] }.
 // mod.early (first two weeks): at most 2 sets. mod.deload (easy weeks): one set less.
+// mod.gear: the equipment at hand ([] = none, e.g. away from home). mod.week: the plan's week.
+//
+// Which exercise fills a slot: the one you swapped in for good; else a favourite of that kind
+// (with several, they take turns every 4 weeks — long enough to get stronger at each);
+// else the first of that kind in the library; else a stand-in of a related kind.
 export function build(s, key, mod = {}) {
   const tpl = template(key);
   if (!tpl) return null;
   const routine = isRoutine(key);
   const limit = routine ? Infinity : LIMIT[s.lift?.minutes] || 6;
-  const gear = owned(s);
+  const gear = mod.gear ? new Set(mod.gear) : owned(s);
+  const favs = favourites(s);
+  const block = Math.floor((mod.week || 0) / 4);
+  const choose = (pool, pick) => {
+    const fav = pool.filter((e) => favs.has(e.id));
+    return fav.length ? fav[(pick + block) % fav.length] : pool[pick % pool.length];
+  };
   const used = new Set();
   const items = [];
   tpl.slots.forEach(([spec, sets, reps], n) => {
@@ -59,6 +83,7 @@ export function build(s, key, mod = {}) {
     const slot = `${key}.${n}`;
     let ex = find(s, s.swaps?.[slot]);
     if (ex && (!usable(ex, gear) || used.has(ex.id))) ex = null;
+    let standIn = false;
     if (!ex) {
       let pattern = null;
       let pick = 0;
@@ -72,8 +97,12 @@ export function build(s, key, mod = {}) {
         pick = Number(v) || 0;
       }
       if (!ex && pattern) {
-        const pool = options(s, pattern).filter((e) => !used.has(e.id));
-        if (pool.length) ex = pool[pick % pool.length];
+        let pool = options(s, pattern, gear).filter((e) => !used.has(e.id));
+        for (const other of pool.length ? [] : FALLBACK[pattern] || []) {
+          pool = options(s, other, gear).filter((e) => !used.has(e.id));
+          if (pool.length) { standIn = true; break; }
+        }
+        if (pool.length) ex = choose(pool, pick);
       }
     }
     if (!ex) return;
@@ -86,6 +115,7 @@ export function build(s, key, mod = {}) {
       slot, id: ex.id, sets: count, reps: repRange,
       target: ex.time ? ex.time.slice() : repRange,
       time: Boolean(ex.time), side: Boolean(ex.side), rest: REST[ex.pattern] ?? 60,
+      ...(standIn ? { standIn: true } : {}),
     });
   });
   return { key, name: tpl.name, routine, items, minutes: estimate(items, routine) };

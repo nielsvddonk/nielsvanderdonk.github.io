@@ -254,6 +254,7 @@ export const exercises = [
   x('cross-body-curl', 'Cross-body hammer curl', 'curl', 'dumbbell', 'biceps forearms', 'Curl one dumbbell up and across your body towards the other shoulder, palm facing in.', { side: true }),
   x('reverse-curl', 'Reverse curl', 'curl', 'barbell', 'forearms biceps', 'A barbell curl with your palms facing down. Great for your forearms.'),
   x('drag-curl', 'Drag curl', 'curl', 'barbell', 'biceps', 'Curl the bar up while keeping it against your body, elbows moving back.'),
+  x('towel-curl', 'Towel curl', 'curl', '', 'biceps forearms', 'Stand on the middle of a towel with one foot and hold both ends. Curl up hard while your leg pushes back a little: slow up, slow down. Works anywhere.'),
   // ---------- Triceps ----------
   x('overhead-extension', 'Overhead triceps extension', 'triceps', 'dumbbell', 'triceps', 'Hold one dumbbell overhead with both hands. Lower it behind your head, extend back up.'),
   x('chair-dip', 'Chair dip', 'triceps', 'chair', 'triceps chest shoulders', 'Hands on the edge of a chair behind you, legs out. Bend your elbows to 90°, push back up.'),

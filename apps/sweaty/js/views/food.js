@@ -3,6 +3,7 @@
 import * as store from '../store.js';
 import * as model from '../model.js';
 import * as cal from '../calories.js';
+import * as nav from '../nav.js';
 import { addDays, dayName, daysBetween, esc, fmt, fmtDate, fmtKg, fmtShort, num, today } from '../util.js';
 import { ICON, bar, toast } from './parts.js';
 import { amountSheet, foodFromEntry, manualSheet } from './food-add.js';
@@ -92,13 +93,14 @@ export default async function foodView(el, { date }) {
     const usual = model.usualFoods(8);
     const left = b.total - e.kcal;
     el.innerHTML = `
+      ${location.hash.startsWith('#/food/') ? nav.backLink('#/food') : ''}
       <header class="page-head">
-        <a class="arrow" href="#/food/${addDays(date, -1)}" aria-label="Previous day">${ICON.left}</a>
+        <a class="arrow" href="#/food/${addDays(date, -1)}" data-replace aria-label="Previous day">${ICON.left}</a>
         <div class="page-title">
           <p class="kicker">Food</p>
           <h1>${esc(dayName(date))}</h1>
         </div>
-        <a class="arrow" href="#/food/${addDays(date, 1)}" aria-label="Next day">${ICON.right}</a>
+        <a class="arrow" href="#/food/${addDays(date, 1)}" data-replace aria-label="Next day">${ICON.right}</a>
       </header>
       <section class="kcal">
         <p class="kcal-main"><b>${fmt(e.kcal)}</b> <span class="muted">of ${fmt(b.total)} kcal</span></p>

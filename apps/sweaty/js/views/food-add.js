@@ -196,9 +196,9 @@ export default function foodAddView(el, { date }) {
 
   el.innerHTML = `
     <div class="add-top">
-      <a class="btn btn-quiet btn-small" href="${back}">${ICON.left} ${esc(dayName(date))}</a>
+      <a class="btn btn-quiet btn-small" href="${back}" data-back>${ICON.left} Back</a>
       <span class="muted small" id="added" aria-live="polite"></span>
-      <a class="btn btn-primary btn-small" href="${back}">Done</a>
+      <a class="btn btn-primary btn-small" href="${back}" data-back>Done</a>
     </div>
     <h1 class="sr">Add food</h1>
     <div class="search">

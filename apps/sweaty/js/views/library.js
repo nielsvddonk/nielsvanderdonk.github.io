@@ -6,6 +6,7 @@
 import * as store from '../store.js';
 import * as model from '../model.js';
 import * as strength from '../strength.js';
+import * as nav from '../nav.js';
 import { GEAR, MUSCLES, PATTERNS, PATTERN_INFO, REST } from '../../data/exercises.js';
 import { drawings, DRAWINGS_CREDIT as CREDIT } from '../../data/pictures.js';
 import { esc, fmt, fmtKg, fmtShort, howToVideo, local, uuid } from '../util.js';
@@ -17,6 +18,16 @@ const muscleName = (m) => MUSCLES.find(([k]) => k === m)?.[1] || m;
 const restText = (sec) => (sec >= 60 ? `${fmt(sec / 60, 1)} min` : `${sec} s`);
 const MUSCLE_FILTER = 'sweaty.library.muscle';
 const ONLY_MINE = 'sweaty.library.only';
+
+// ★ Favourites: sessions pick them first, so they come up in your workouts more often.
+export function toggleFavourite(id) {
+  const s = model.settings();
+  const favs = new Set(s.favourites || []);
+  if (favs.has(id)) favs.delete(id); else favs.add(id);
+  store.saveSettings({ ...s, favourites: [...favs] });
+  return favs.has(id);
+}
+const starButton = (id, on, cls = '') => `<button type="button" class="fav${on ? ' is-on' : ''}${cls}" data-fav="${esc(id)}" aria-pressed="${on}" aria-label="${on ? 'Favourite' : 'Make favourite'}">${on ? ICON.starFull : ICON.star}</button>`;
 
 // Only web addresses become links (and pictures kept in this browser in local mode).
 const webUrl = (u) => (/^https?:\/\/\S+$/i.test(String(u || '').trim()) ? String(u).trim() : '');
@@ -82,6 +93,7 @@ const norm = (x) => String(x || '').toLowerCase().normalize('NFD').replace(/[̀-
 export function libraryView(el) {
   let muscle = local.get(MUSCLE_FILTER, '');
   let onlyMine = local.get(ONLY_MINE, true);
+  let favOnly = false;
   let query = '';
 
   el.innerHTML = `
@@ -92,6 +104,7 @@ export function libraryView(el) {
     <p class="muted small" data-count></p>
     <div class="search"><input type="search" data-q placeholder="Search: squat, curl, plank…" autocomplete="off" aria-label="Search exercises"></div>
     <div class="chips" data-muscles>
+      <button type="button" class="chip chip-fav" data-favonly>★ Favourites</button>
       <button type="button" class="chip" data-muscle="">All</button>
       ${MUSCLES.map(([k, label]) => `<button type="button" class="chip" data-muscle="${k}">${esc(label)}</button>`).join('')}
     </div>
@@ -101,8 +114,10 @@ export function libraryView(el) {
   function draw() {
     const s = model.settings();
     const gear = strength.owned(s);
+    const favs = strength.favourites(s);
     const words = norm(query).split(/\s+/).filter(Boolean);
     const list = strength.library(s)
+      .filter((e) => !favOnly || favs.has(e.id))
       .filter((e) => !muscle || e.muscles.includes(muscle))
       .filter((e) => !onlyMine || strength.canDo(e, gear))
       .filter((e) => {
@@ -115,24 +130,35 @@ export function libraryView(el) {
       if (!groups.has(e.pattern)) groups.set(e.pattern, []);
       groups.get(e.pattern).push(e);
     }
-    el.querySelectorAll('[data-muscle]').forEach((b) => b.classList.toggle('is-on', b.dataset.muscle === muscle));
-    el.querySelector('[data-count]').textContent = `${list.length} ${list.length === 1 ? 'exercise' : 'exercises'}${muscle ? ` for ${muscleName(muscle).toLowerCase()}` : ''}${onlyMine ? ' you can do with your equipment' : ''}. Tap one for how to do it.`;
+    el.querySelectorAll('[data-muscle]').forEach((b) => b.classList.toggle('is-on', !favOnly && b.dataset.muscle === muscle));
+    el.querySelector('[data-favonly]').classList.toggle('is-on', favOnly);
+    el.querySelector('[data-count]').textContent = favOnly
+      ? `${list.length} ${list.length === 1 ? 'favourite' : 'favourites'}. Your workouts use these first.`
+      : `${list.length} ${list.length === 1 ? 'exercise' : 'exercises'}${muscle ? ` for ${muscleName(muscle).toLowerCase()}` : ''}${onlyMine ? ' you can do with your equipment' : ''}. Tap ☆ to make one a favourite: it comes up in your workouts more often.`;
     el.querySelector('[data-list]').innerHTML = [...groups.entries()].map(([pattern, items]) => `
       <h2 class="label">${esc(PATTERNS[pattern] || pattern)}</h2>
       <ul class="results">${items.map((e) => {
         const pics = pictures(e);
         const tags = [e.mine && 'yours', e.hidden && 'not used', !strength.canDo(e, gear) && 'no gear'].filter(Boolean);
-        return `<li><a class="result ex-row${e.hidden || !strength.canDo(e, gear) ? ' is-unavailable' : ''}" href="#/exercises/${encodeURIComponent(e.id)}">
+        return `<li class="ex-li"><a class="result ex-row${e.hidden || !strength.canDo(e, gear) ? ' is-unavailable' : ''}" href="#/exercises/${encodeURIComponent(e.id)}">
           <span class="ex-thumb">${pics ? `<img src="${esc(pics.list[0])}" alt="" loading="lazy" onerror="this.remove()">` : bodyMap(e.muscles, { labels: false, className: 'mini' })}</span>
           <span class="row-text"><span class="row-title">${esc(e.name)}</span>
           <span class="row-meta">${esc(e.muscles.map(muscleName).join(', '))}${e.gear.length ? ` · ${esc(e.gear.map(gearName).join(', '))}` : ''}</span></span>
-          ${tags.map((t) => `<span class="tag">${t}</span>`).join('')}</a></li>`;
-      }).join('')}</ul>`).join('') || '<p class="muted">Nothing found. Try another muscle, or turn off “only what I can do”.</p>';
+          ${tags.map((t) => `<span class="tag">${t}</span>`).join('')}</a>${starButton(e.id, favs.has(e.id))}</li>`;
+      }).join('')}</ul>`).join('') || `<p class="muted">${favOnly ? 'No favourites yet: tap ☆ next to an exercise.' : 'Nothing found. Try another muscle, or turn off “only what I can do”.'}</p>`;
   }
 
   el.addEventListener('click', (e) => {
+    const star = e.target.closest('[data-fav]');
+    if (star) {
+      const on = toggleFavourite(star.dataset.fav);
+      toast(on ? '★ Favourite: it comes up in your workouts more often' : 'Not a favourite any more');
+      draw();
+      return;
+    }
+    if (e.target.closest('[data-favonly]')) { favOnly = !favOnly; draw(); return; }
     const m = e.target.closest('[data-muscle]');
-    if (m) { muscle = m.dataset.muscle; local.set(MUSCLE_FILTER, muscle); draw(); return; }
+    if (m) { favOnly = false; muscle = m.dataset.muscle; local.set(MUSCLE_FILTER, muscle); draw(); return; }
     if (e.target.closest('[data-act="new"]')) exerciseForm(null, { onSave: (ex) => { location.hash = `#/exercises/${encodeURIComponent(ex.id)}`; } });
   });
   el.addEventListener('change', (e) => {
@@ -160,11 +186,13 @@ export function exerciseView(el, { id }) {
       el.innerHTML = '<p>That exercise isn’t in the library (any more). <a href="#/exercises">All exercises</a></p>';
       return;
     }
+    const fav = strength.favourites(s).has(ex.id);
     el.innerHTML = `
-      <p class="back"><a href="#/exercises">‹ Exercises</a></p>
+      ${nav.backLink('#/exercises')}
       <p class="kicker">${esc(PATTERNS[ex.pattern] || ex.pattern)}${ex.mine ? ' · your own' : ''}</p>
       <h1>${esc(ex.name)}</h1>
       <div class="btn-row ex-actions">
+        <button type="button" class="btn${fav ? ' btn-fav-on' : ''}" data-act="fav" aria-pressed="${fav}">${fav ? `${ICON.starFull} Favourite` : `${ICON.star} Favourite`}</button>
         <button type="button" class="btn" data-act="edit">Edit</button>
         <button type="button" class="btn btn-quiet" data-act="hide">${ex.hidden ? 'Use in my workouts again' : 'Don’t use in my workouts'}</button>
       </div>
@@ -178,7 +206,12 @@ export function exerciseView(el, { id }) {
     const s = model.settings();
     const ex = strength.find(s, exId);
     if (!ex) return;
-    if (act === 'edit') exerciseForm(ex, { onSave: draw, onDelete: () => { location.hash = '#/exercises'; } });
+    if (act === 'fav') {
+      const on = toggleFavourite(ex.id);
+      toast(on ? '★ Favourite: it comes up in your workouts more often' : 'Not a favourite any more');
+      draw();
+    }
+    if (act === 'edit') exerciseForm(ex, { onSave: draw, onDelete: () => nav.back('#/exercises') });
     if (act === 'hide') {
       saveExercise(ex, { hidden: !ex.hidden });
       toast(ex.hidden ? 'Back in your workouts' : 'Sweaty won’t use this one any more');

@@ -254,7 +254,7 @@ function liftDays(rhythm, roles, i) {
 function liftInfo(key, { i, ph, cut }) {
   const t = sessions[key];
   if (!t) return null;
-  return { key, name: t.name, legs: t.legs, mod: { early: i < 2, deload: cut || ['taper', 'recovery', 'race'].includes(ph.key) } };
+  return { key, name: t.name, legs: t.legs, mod: { early: i < 2, deload: cut || ['taper', 'recovery', 'race'].includes(ph.key), week: i } };
 }
 
 // The strength session for a day when you pick one yourself in "Change this day".

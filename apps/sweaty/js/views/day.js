@@ -5,11 +5,11 @@ import * as store from '../store.js';
 import * as model from '../model.js';
 import * as plan from '../plan.js';
 import * as strength from '../strength.js';
+import * as nav from '../nav.js';
 import { routines, sessions } from '../../data/sessions.js';
 import { DAY_SHORT, addDays, dayName, esc, fmt, fmtDate, fmtKm, fmtPace, fmtTime, local, num, sum, today, weekday } from '../util.js';
 import { ICON, bar, mark, sheet, toast } from './parts.js';
 
-export const FEEL = ['', 'easy', 'good', 'hard', 'very hard'];
 const progressKey = (date, key) => `sweaty.workout.${date}.${key}`;
 
 // "Intervals · 9 km" / "Full body A" / "Rest"
@@ -45,25 +45,28 @@ export default function dayView(el, { date }) {
       line = `Week ${w.number}${w.total ? ` of ${w.total}` : ''} · ${plan.PHASES[w.phase]}${w.cutback ? ' · easy week' : ''}`;
     }
     return `
+      ${isToday ? '' : nav.backLink('#/')}
       <header class="page-head">
-        <a class="arrow" href="${here(addDays(date, -1))}" aria-label="Previous day">${ICON.left}</a>
+        <a class="arrow" href="${here(addDays(date, -1))}" data-replace aria-label="Previous day">${ICON.left}</a>
         <div class="page-title">
           ${sub ? `<p class="kicker">${esc(sub)}</p>` : ''}
           <h1>${esc(isToday ? 'Today' : dayName(date))}</h1>
           <p class="muted small"><a href="#/week/${date}">${line}</a></p>
         </div>
-        <a class="arrow" href="${here(addDays(date, 1))}" aria-label="Next day">${ICON.right}</a>
+        <a class="arrow" href="${here(addDays(date, 1))}" data-replace aria-label="Next day">${ICON.right}</a>
       </header>`;
   }
 
+  // A run is logged as just a distance: what you ran is what counts for your food.
   function runCard(d) {
     if (!d.run && !d.runs.length) return '';
     const st = d.status.run;
     const r = d.run;
+    const kg = model.weightOn(date) || 80;
     const done = d.runs.map((row) => {
       const x = row.data;
       const pace = x.sec && x.km ? ` · ${fmtPace(x.sec / x.km)}/km` : '';
-      return `<li><a href="#/run/${date}/${row.id}">${ICON.check}<span><strong>${fmtKm(x.km)} km</strong>${x.sec ? ` in ${fmtTime(x.sec)}` : ''}${pace}${x.feel ? ` · felt ${FEEL[x.feel]}` : ''}</span></a></li>`;
+      return `<li><button type="button" class="done-run" data-run="${row.id}">${ICON.check}<span><strong>${fmtKm(x.km)} km</strong>${x.sec ? ` in ${fmtTime(x.sec)}` : ''}${pace}<span class="muted"> · +${fmt(x.km * kg)} kcal food</span></span><span class="muted small">change</span></button></li>`;
     }).join('');
     return `
       <section class="card${st === 'done' ? ' is-done' : ''}">
@@ -72,12 +75,12 @@ export default function dayView(el, { date }) {
         ${done ? `<ul class="done-list">${done}</ul>` : ''}
         ${st === 'todo' || st === 'missed' ? `
           <div class="btn-row">
-            <a class="btn btn-primary" href="#/run/${date}">Log run</a>
-            <button class="btn" type="button" data-act="run-planned">Done as planned</button>
+            <button class="btn btn-primary" type="button" data-act="run-planned">${ICON.check} Done: ${fmtKm(r.km)} km</button>
+            <button class="btn" type="button" data-act="log-run">Other distance</button>
             <button class="btn btn-quiet" type="button" data-act="skip" data-item="run">Skip</button>
           </div>` : ''}
         ${st === 'skipped' ? `<p class="muted small">Skipped. <button class="link" type="button" data-act="unskip" data-item="run">Undo</button></p>` : ''}
-        ${st === 'done' ? `<p class="small"><a href="#/run/${date}">+ Log another run</a></p>` : ''}
+        ${st === 'done' ? `<p class="small"><button class="link" type="button" data-act="log-run">+ Another run</button></p>` : ''}
       </section>`;
   }
 
@@ -156,7 +159,7 @@ export default function dayView(el, { date }) {
       ${w.before ? '' : `
         <div class="day-actions">
           <button class="btn btn-quiet" type="button" data-act="change">Change this day${d.changed ? ' (changed)' : ''}</button>
-          ${!d.run && !d.runs.length ? `<a class="btn btn-quiet" href="#/run/${date}">Log a run</a>` : ''}
+          ${!d.run && !d.runs.length ? '<button class="btn btn-quiet" type="button" data-act="log-run">Log a run</button>' : ''}
         </div>`}`;
   }
 
@@ -247,15 +250,69 @@ export default function dayView(el, { date }) {
     });
   }
 
+  // How far did you run? Just the distance; it changes what you can eat today.
+  function runSheet(row = null) {
+    const d = model.day(date);
+    const kg = model.weightOn(date) || 80;
+    const planned = !row && !d.runs.length ? d.run : null;
+    const dlg = sheet(`
+      <h2>${row ? 'Change run' : planned ? `${esc(planned.title)}: how far did you go?` : 'How far did you run?'}</h2>
+      <form novalidate>
+        <label class="field"><span class="label">Distance</span>
+          <span class="with-unit km-input"><input name="km" inputmode="decimal" value="${row?.data.km ?? planned?.km ?? ''}" placeholder="8" autocomplete="off"><span>km</span></span></label>
+        <p class="muted small" data-kcal></p>
+        <p class="error" data-error hidden></p>
+        <div class="btn-row">
+          <button class="btn btn-primary">Save</button>
+          ${row ? '<button type="button" class="btn btn-danger" data-delete>Delete</button>' : ''}
+          <button type="button" class="btn btn-quiet" data-close>Cancel</button>
+        </div>
+      </form>`);
+    const form = dlg.querySelector('form');
+    const show = () => {
+      const km = num(form.km.value);
+      dlg.querySelector('[data-kcal]').textContent = km > 0 ? `That’s about ${fmt(km * kg)} kcal extra you can eat today.` : '';
+    };
+    form.km.addEventListener('input', show);
+    show();
+    form.km.select();
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const km = num(form.km.value);
+      if (!(km > 0 && km <= 300)) {
+        const err = dlg.querySelector('[data-error]');
+        err.textContent = 'Fill in how many km you ran.';
+        err.hidden = false;
+        return;
+      }
+      const data = row ? { ...row.data, km }
+        : { km, type: planned?.type || 'easy', title: planned?.title || 'Run', at: Date.now() };
+      store.put({ id: row?.id, day: date, kind: 'run', data });
+      dlg.close();
+      draw();
+      toast(row ? 'Run changed' : 'Run logged. Nice!');
+    });
+    dlg.querySelector('[data-delete]')?.addEventListener('click', () => {
+      if (!confirm('Delete this run?')) return;
+      store.remove(row.id);
+      dlg.close();
+      draw();
+      toast('Run deleted');
+    });
+  }
+
   el.addEventListener('click', (e) => {
+    const runRow = e.target.closest('[data-run]');
+    if (runRow) { const row = store.get(runRow.dataset.run); if (row) runSheet(row); return; }
     const b = e.target.closest('[data-act]');
     if (!b) return;
     const act = b.dataset.act;
     if (act === 'change') { openChange(); return; }
+    if (act === 'log-run') { runSheet(); return; }
     if (act === 'run-planned') {
       const d = model.day(date);
-      store.put({ day: date, kind: 'run', data: { km: d.run.km, sec: null, type: d.run.type, title: d.run.title, at: Date.now() } });
-      toast('Run logged. Nice!');
+      store.put({ day: date, kind: 'run', data: { km: d.run.km, type: d.run.type, title: d.run.title, at: Date.now() } });
+      toast(`${fmtKm(d.run.km)} km logged. Nice!`);
     }
     if (act === 'skip') store.put({ day: date, kind: 'skip', data: { item: b.dataset.item, at: Date.now() } });
     if (act === 'unskip') {

@@ -3,6 +3,7 @@
 import * as store from '../store.js';
 import * as model from '../model.js';
 import * as plan from '../plan.js';
+import * as nav from '../nav.js';
 import { DAY_NAMES, DAY_SHORT, addDays, esc, fmt, fmtDate, fmtKm, fmtPace, fmtShort, fmtTime, mondayOf, parseDay, sum, today, weekday } from '../util.js';
 import { ICON, mark, sheet, toast } from './parts.js';
 
@@ -125,14 +126,15 @@ export function weekView(el, { date }) {
       ? 'A lighter week: less running and one set less in the gym, so your body can catch up and get stronger.'
       : plan.PHASE_INFO[w.phase];
     el.innerHTML = `
+      ${date ? nav.backLink('#/week') : ''}
       <header class="page-head">
-        <a class="arrow" href="#/week/${addDays(monday, -7)}" aria-label="Previous week">${ICON.left}</a>
+        <a class="arrow" href="#/week/${addDays(monday, -7)}" data-replace aria-label="Previous week">${ICON.left}</a>
         <div class="page-title">
           <p class="kicker">${esc(fmtShort(monday))} – ${esc(fmtShort(addDays(monday, 6)))}</p>
           <h1>${w.before ? 'Before your plan' : `Week ${w.number}${w.total ? ` <span class="muted">of ${w.total}</span>` : ''}`}</h1>
           ${w.before ? '' : `<p class="muted small"><strong>${plan.PHASES[w.phase]}${w.cutback ? ' · easy week' : ''}</strong>${w.ownWeek ? ' · your own days' : ''}</p>`}
         </div>
-        <a class="arrow" href="#/week/${addDays(monday, 7)}" aria-label="Next week">${ICON.right}</a>
+        <a class="arrow" href="#/week/${addDays(monday, 7)}" data-replace aria-label="Next week">${ICON.right}</a>
       </header>
       ${info ? `<p class="phase-info">${esc(info)}</p>` : ''}
       <div class="stats">
@@ -170,7 +172,7 @@ export function planView(el) {
   const recent = `from your ${s.run.recentTime} ${({ 5: '5K', 10: '10K', 21.0975: 'half marathon', 42.195: 'marathon' })[s.run.recentKm] || 'race'}`;
 
   el.innerHTML = `
-    <p class="back"><a href="#/week">‹ This week</a></p>
+    ${nav.backLink('#/week')}
     <h1>${esc(s.run.raceName || R.name)}</h1>
     <p class="muted">${s.run.raceDate
       ? `${esc(fmtDate(s.run.raceDate, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))}${left !== null && raceWeek >= current ? ` · ${left === 0 ? 'this week!' : `${left} weeks to go`}` : ''}`

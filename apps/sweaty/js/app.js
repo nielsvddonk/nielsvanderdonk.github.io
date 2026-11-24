@@ -6,7 +6,6 @@
 //   #/day/2026-11-25       any other day
 //   #/week, #/week/<day>   a week of the plan          #/plan   the whole plan
 //   #/workout/<day>/<key>  workout mode (key: fullA, upperB, core, mobility, …)
-//   #/run/<day>[/<id>]     log or change a run
 //   #/food[/<day>]         food and weight             #/food/<day>/add   add food
 //   #/me                   settings                    #/me/foods         your own foods
 //   #/exercises[/<id>]     the exercises: how to, pictures, your own
@@ -15,12 +14,12 @@
 // Each page is a function (el, args) that fills `el` and may return { refresh(), destroy() }.
 
 import * as store from './store.js';
+import * as nav from './nav.js';
 import { complete } from './defaults.js';
 import { esc, loginHref, today } from './util.js';
 import dayView from './views/day.js';
 import { weekView, planView } from './views/week.js';
 import workoutView from './views/workout.js';
-import runView from './views/run.js';
 import foodView from './views/food.js';
 import foodAddView from './views/food-add.js';
 import { meView, setupView, myFoodsView } from './views/me.js';
@@ -33,7 +32,7 @@ const routes = [
   { re: new RegExp(`^/week(?:/${DAY})?$`), view: weekView, tab: 'week', args: (m) => ({ date: m[1] }) },
   { re: /^\/plan$/, view: planView, tab: 'week' },
   { re: new RegExp(`^/workout/${DAY}/([\\w-]+)$`), view: workoutView, focus: true, args: (m) => ({ date: m[1], key: m[2] }) },
-  { re: new RegExp(`^/run/${DAY}(?:/([\\w-]+))?$`), view: runView, tab: 'today', args: (m) => ({ date: m[1], id: m[2] }) },
+  { re: new RegExp(`^/run/${DAY}`), redirect: (m) => `#/day/${m[1]}` }, // runs are logged on the day itself now
   { re: new RegExp(`^/food(?:/${DAY})?$`), view: foodView, tab: 'food', args: (m) => ({ date: m[1] || today() }) },
   { re: new RegExp(`^/food/${DAY}/add$`), view: foodAddView, tab: 'food', args: (m) => ({ date: m[1] }) },
   { re: /^\/me$/, view: meView, tab: 'me' },
@@ -66,12 +65,14 @@ async function route() {
   const mine = ++token;
   current?.destroy?.();
   current = null;
+  nav.stamp();
   const path = (location.hash.slice(1) || '/').split('?')[0];
-  if (path.startsWith('/library')) { location.replace(`#${path.replace('/library', '/exercises')}`); return; } // old address
+  if (path.startsWith('/library')) { nav.go(`#${path.replace('/library', '/exercises')}`, { replace: true }); return; } // old address
   const hasSettings = Boolean(store.getSettings());
-  if (!hasSettings && path !== '/setup') { location.replace('#/setup'); return; }
-  if (hasSettings && path === '/setup') { location.replace('#/'); return; }
+  if (!hasSettings && path !== '/setup') { nav.go('#/setup', { replace: true }); return; }
+  if (hasSettings && path === '/setup') { nav.go('#/', { replace: true }); return; }
   const r = routes.find((x) => x.re.test(path));
+  if (r?.redirect) { nav.go(r.redirect(path.match(r.re)), { replace: true }); return; }
   chrome(r);
   shownDay = today();
   // Every page gets a fresh element, so nothing of the last page keeps listening.
@@ -145,6 +146,16 @@ async function refresh() {
   } catch { /* offline for a moment: keep showing what we have */ }
   refreshing = false;
 }
+
+// "‹ Back" links go back in the history; the ‹ › arrows (data-replace) don't add history steps.
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('[data-back], a[data-replace]');
+  if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey) return;
+  e.preventDefault();
+  const href = a.getAttribute('href') || a.dataset.back || '#/';
+  if (a.hasAttribute('data-back')) nav.back(href);
+  else nav.go(href, { replace: true });
+});
 
 window.addEventListener('hashchange', route);
 window.addEventListener('sweaty:rerender', route);

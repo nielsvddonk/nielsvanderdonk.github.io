@@ -12,6 +12,7 @@
   --accent-soft: #e6f5ec;
   --on-accent: #ffffff;
   --warn: #d9480f;        /* over your calories */
+  --star: #e3a008;        /* favourites */
 
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --text: 17px;
@@ -36,6 +37,7 @@
     --accent-soft: #11291b;
     --on-accent: #08130c;
     --warn: #ff8a50;
+    --star: #ffc53d;
   }
 }
 
@@ -153,9 +155,9 @@ main {
   border-radius: var(--radius);
 }
 
-.back { margin: 6px 0 12px; font-size: .95rem; color: var(--muted); }
-.back a { text-decoration: none; }
-.back a:hover { text-decoration: underline; }
+.back { margin: 2px 0 6px; font-size: .95rem; color: var(--muted); }
+.back a { display: inline-flex; align-items: center; min-height: 40px; padding-right: 16px; text-decoration: none; }
+.back a:hover { color: var(--fg); }
 
 /* ---------- Buttons and inputs ---------- */
 
@@ -290,6 +292,10 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--f
 .done-list a { text-decoration: none; }
 .done-list a:hover span { text-decoration: underline; }
 .done-list svg { width: 18px; height: 18px; color: var(--accent); flex: none; margin-top: 3px; }
+.done-run { width: 100%; display: flex; align-items: flex-start; gap: 8px; padding: 6px 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.done-run > span:first-of-type { flex: 1; }
+.done-run:hover strong { text-decoration: underline; }
+.km-input input { font-size: 1.6rem; font-weight: 700; padding: 10px 14px; max-width: 160px; }
 
 /* ---------- Week and plan ---------- */
 
@@ -368,6 +374,10 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--f
 .ex-jump { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 2px; background: none; border: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .ex-jump > span:first-child { display: flex; flex-direction: column; }
 .ex-name { font-weight: 600; }
+.ex-jump.is-skipped .ex-name { text-decoration: line-through; color: var(--muted); }
+.wo-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.wo-title .fav { margin-top: 4px; }
+.gear-here { margin: 14px 0; }
 .finish { text-align: center; padding-top: 4vh; }
 .finish .done-list { text-align: left; margin: 20px 0; }
 .finish-mark { display: grid; place-items: center; color: var(--accent); margin-bottom: 8px; }
@@ -415,6 +425,17 @@ a.result:hover .row-title, button.result:hover .row-title { text-decoration: und
 .amount-kcal b { font-size: 1.9rem; }
 
 /* ---------- Exercises ---------- */
+
+/* ☆ favourites */
+.fav { flex: none; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 999px; background: none; color: var(--muted); cursor: pointer; }
+.fav svg { width: 22px; height: 22px; }
+.fav:hover { background: var(--soft); }
+.fav.is-on { color: var(--star); }
+.btn-fav-on, .btn-fav-on:hover { border-color: var(--star); color: var(--star); }
+.chip-fav.is-on { background: var(--star); border-color: var(--star); color: #1b1300; }
+.star-inline { color: var(--star); }
+.ex-li { display: flex; align-items: center; gap: 4px; }
+.ex-li .ex-row { flex: 1; min-width: 0; }
 
 .lib-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 4px; }
 .lib-head h1 { margin: 0; }
